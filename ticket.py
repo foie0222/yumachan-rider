@@ -42,9 +42,6 @@ def make_ticket(entry):
                                 '200')
                 ticlet_list.append(ticket)
 
-    for ticket in ticlet_list:
-        print(ticket.to_string())
-
     return ticlet_list
 
 

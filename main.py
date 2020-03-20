@@ -1,9 +1,9 @@
-# データを取得する対象
 from scraper import Scraper
 from entry import get_entry
 from ticket import make_ticket
 from writer import make_csv
 
+# データを取得する対象
 url = "https://www.ai-yuma.com/?page=1584683595"
 
 

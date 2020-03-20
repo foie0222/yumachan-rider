@@ -54,7 +54,3 @@ def get_rno(row):
 
 def get_rname(row):
     return row.split('R ')[1]
-
-
-if __name__ == '__main__':
-    print(get_rname(row))

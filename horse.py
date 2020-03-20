@@ -26,7 +26,3 @@ def get_sign(row_house):
     if '紐' in row_house:
         return 'braid'
     return None
-
-
-# if __name__ == '__main__':
-#     get_horse_list()
