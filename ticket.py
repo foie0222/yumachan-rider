@@ -38,11 +38,19 @@ def make_ticket(entry):
         axis_list = get_axis_list(entry.horse_list)
         if horse.sign == 'braid':
             for axis in axis_list:
-                ticket = Ticket(entry.opdt, entry.rcourcecd, entry.rno, 'WIDE', 'NORMAL', '', axis.umano + '-' + horse.umano,
+                ticket = Ticket(entry.opdt, entry.rcourcecd, entry.rno, 'WIDE', 'NORMAL', '', make_wide(axis.umano, horse.umano),
                                 '200')
                 ticlet_list.append(ticket)
 
     return ticlet_list
+
+
+def make_wide(umano1, umano2):
+   uma1 = int(umano1)
+   uma2 = int(umano2)
+   if uma1 < uma2:
+       return umano1 + '-' + umano2
+   return umano2 + '-' + umano1
 
 
 # 軸馬と1番高確率の馬のリスト
