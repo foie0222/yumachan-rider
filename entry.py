@@ -49,7 +49,7 @@ def get_rcourcecd(row):
 
 
 def get_rno(row):
-    return row[11:].split('R')[0]
+    return row[11:].split('R')[0].zfill(2)
 
 
 def get_rname(row):
