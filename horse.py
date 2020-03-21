@@ -1,6 +1,6 @@
 class Horse:
     def __init__(self, umano, probability, sign):
-        self.umano = umano.replace(' ', '0') #1桁目を0埋め
+        self.umano = umano
         self.probability = probability
         self.sign = sign
 
@@ -15,9 +15,13 @@ def get_horse_list(txt):
     row_horse_list = remove_tag_txt.split('<br/>')
 
     for row_house in row_horse_list[:-1]:
-        horse_list.append(Horse(row_house[1:3], row_house[4:8], get_sign(row_house)))
+        horse_list.append(Horse(get_hotse_no(row_house), row_house[4:8], get_sign(row_house)))
 
     return horse_list
+
+
+def get_hotse_no(row_house):
+    return row_house[1:3].replace(' ', '0') #1桁目がブランクの場合は0埋め
 
 
 def get_sign(row_house):
