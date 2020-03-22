@@ -72,6 +72,3 @@ def get_num_from_index(index):
     return str(index + 1).zfill(2)
 
 
-# if __name__ == '__main__':
-#     get_realtime_odds('20200320', '06', '04')
-
