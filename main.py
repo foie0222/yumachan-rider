@@ -21,10 +21,10 @@ def main():
     entry = get_entry(header_txt, body_txt)
 
     # リアルタイムオッズを取得
-    realtime_odds_list = get_realtime_odds(entry.opdt, entry.rcourcecd, entry.rno)
+    realtime_odds = get_realtime_odds(entry.opdt, entry.rcourcecd, entry.rno)
 
     # 購入馬券リストを作る
-    ticket_list = make_ticket(entry, realtime_odds_list)
+    ticket_list = make_ticket(entry, realtime_odds)
 
     # 購入馬券リストをcsvに書き出す
     make_csv(ticket_list, timestamp)

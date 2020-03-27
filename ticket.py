@@ -18,57 +18,77 @@ class Ticket:
                                                 self.number, self.bet_price)
 
 
-def make_ticket(entry, realtime_odds_list):
+def make_ticket(entry, realtime_odds):
     ticlet_list = []
-    axis_list = [entry.horse_list[0]]  # 1番高確率馬は軸馬に入れておく
-    braid_list = []  # 紐馬には何も入れない
+    axis_list = []
+    braid_list = []
 
-    # 軸馬（上位6頭のうち軸のサインがある、もしくは単勝回収率110%以上）の単勝を購入
-    for horse in entry.horse_list[:5]:
+    realtime_tan_odds_list = realtime_odds.tan_odds_list
+
+    # 軸馬の単勝馬券を購入
+    for index, horse in enumerate(entry.horse_list[:4]):
+
+        odds = list(filter(lambda real_odds: True if real_odds.umano == horse.umano else False, realtime_tan_odds_list))[0]
+
         bet = 0
-        odds = list(filter(lambda realtime_odds: True if realtime_odds.umano == horse.umano else False, realtime_odds_list))[0]
-
-        if horse.sign == 'axis':
-            bet += 300  # 軸馬だったら300円ベット
         if horse.probability * odds.tanodds >= 110:
-            bet += 100  # 単勝回収率が110%以上なら追加で300円ベット
+            bet = lowest_bet_for(3000, odds.tanodds)  # 単勝回収率が110%以上なら払い戻しが3000円超える最低金額をベット
         if horse.probability * odds.tanodds >= 120:
-            bet += 200  # 単勝回収率が120%以上なら追加で200円ベット
+            bet = lowest_bet_for(5000, odds.tanodds)  # 単勝回収率が120%以上なら払い戻しが5000円超える最低金額をベット
         if horse.probability * odds.tanodds >= 130:
-            bet += 300  # 単勝回収率が130%以上なら追加で200円ベット
+            bet = lowest_bet_for(8000, odds.tanodds)  # 単勝回収率が130%以上なら払い戻しが8000円超える最低金額をベット
 
-        if bet == 0:  # betが0なら次へ
+        if bet > 0 or horse.sign == 'axis' or index == 0:  # 購入金額が100円以上もしくは軸の表記がある馬、最も高確率の馬は軸馬リストに追加
+            axis_list.append(horse)
+
+        if odds.tanodds < 5 or bet == 0:  # 単勝オッズが5倍以下なら購入見送り
             continue
         ticket = Ticket(entry.opdt, entry.rcourcecd, entry.rno, 'TANSYO', 'NORMAL', '', horse.umano, str(bet))
         ticlet_list.append(ticket)
-        axis_list.append(horse)
 
-    # 紐馬（紐のサインがある、もしくは単勝回収率170%以上）の単勝・複勝を購入
+    # 紐馬（紐のサインがある、もしくは単勝回収率150%以上）の単勝・複勝を購入
     for horse in entry.horse_list:
+
+        odds = list(filter(lambda real_odds: True if real_odds.umano == horse.umano else False, realtime_tan_odds_list))[0]
+
         bet = 0
-        odds = list(filter(lambda realtime_odds: True if realtime_odds.umano == horse.umano else False, realtime_odds_list))[0]
+        # 単勝回収率が150％超えてオッズが30倍超えていれば単勝を購入
+        if horse.probability * odds.tanodds >= 170:
+            bet = lowest_bet_for(5000, odds.tanodds)
 
-        if horse.sign == 'braid' or horse.probability * odds.tanodds >= 170:
-            bet += 100
+        if horse.sign == 'braid' or horse.probability * odds.tanodds >= 150:
+            braid_list.append(horse)
 
-        if bet == 0:  # betが0なら次へ
+        if odds.tanodds < 30 or bet == 0 or horse.umano in axis_list:  # 単勝オッズが30倍以下もしくは軸馬なら購入見送り
             continue
         ticket_tan = Ticket(entry.opdt, entry.rcourcecd, entry.rno, 'TANSYO', 'NORMAL', '', horse.umano, str(bet))
-        ticket_fuku = Ticket(entry.opdt, entry.rcourcecd, entry.rno, 'FUKUSYO', 'NORMAL', '', horse.umano, str(bet))
         ticlet_list.append(ticket_tan)
-        ticlet_list.append(ticket_fuku)
-        braid_list.append(horse)
+
+    realtime_wide_odds_list = realtime_odds.wide_odds_list
 
     # 紐馬と軸馬とのワイドを購入
     for braid in braid_list:
         for axis in axis_list:
             if axis.umano == braid.umano:
                 continue
+            pair_num = make_wide(braid.umano, axis.umano)
+            odds = list(filter(lambda real_odds: True if pair_num == real_odds.pair_umano else False, realtime_wide_odds_list))[0]
+            if odds.wideodds < 25:
+                continue
+            bet = lowest_bet_for(5000, odds.wideodds)
+
             ticket = Ticket(entry.opdt, entry.rcourcecd, entry.rno, 'WIDE', 'NORMAL', '', make_wide(axis.umano, braid.umano),
-                            '200')
+                            str(bet))
             ticlet_list.append(ticket)
 
     return ticlet_list
+
+
+def lowest_bet_for(pay, odds):
+    bet = 100
+    while pay > odds * bet:
+        bet += 100
+    return bet
 
 
 def make_wide(umano1, umano2):
