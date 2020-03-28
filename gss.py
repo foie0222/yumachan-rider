@@ -11,8 +11,8 @@ def write_gss(ticket_list, timestamp):
     credentials = ServiceAccountCredentials.from_json_keyfile_name('credential/keibaautovote.json', scope)
     gc = gspread.authorize(credentials)
 
-    # シート名は先頭から6桁
-    sheet_name = timestamp[:6]
+    # シート名は先頭から8桁
+    sheet_name = timestamp[:8]
     worksheet = gc.open_by_key(SPREADSHEET_KEY).worksheet(sheet_name)
 
     # 購入リストを1件ずつスプレッドシートに書き出す
