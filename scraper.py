@@ -9,11 +9,25 @@ class Scraper:
     def get_get_header_txt(self):
         self.response.encoding = self.response.apparent_encoding
         soup = BeautifulSoup(self.response.text, "html.parser")
-        target_soup = soup.find("div", class_="entry-inner")
-        return str(target_soup.header.find("a", class_="entry-title-link bookmark").string)
+        target_soups = soup.find_all("div", class_="entry-inner")
+
+        for target_soup in target_soups:
+            if target_soup.header.find("a", class_="entry-category-link category-地方競馬") is not None:  # 地方競馬ならスキップ
+                continue
+            return str(target_soup.header.find("a", class_="entry-title-link bookmark").string)
+
+        return None
 
     def get_get_body_txt(self):
         self.response.encoding = self.response.apparent_encoding
         soup = BeautifulSoup(self.response.text, "html.parser")
         target_soup = soup.find("div", class_="entry-inner")
-        return str(target_soup.find("div", class_="entry-content").p)
+
+        target_soups = soup.find_all("div", class_="entry-inner")
+
+        for target_soup in target_soups:
+            if target_soup.header.find("a", class_="entry-category-link category-地方競馬") is not None:  # 地方競馬ならスキップ
+                continue
+            return str(target_soup.find("div", class_="entry-content").p)
+
+        return None
