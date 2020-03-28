@@ -1,3 +1,4 @@
+from gss import write_gss
 from odds import get_realtime_odds
 from scraper import Scraper
 from entry import get_entry
@@ -6,14 +7,14 @@ from writer import make_csv
 import sys
 
 # データを取得する対象
-url = "https://www.ai-yuma.com/"
+URL = "https://www.ai-yuma.com/"
 
 
 def main():
     timestamp = sys.argv[1]
 
     # ゆまちゃんのHRから情報を取得
-    scraper = Scraper(url)
+    scraper = Scraper(URL)
     header_txt = scraper.get_get_header_txt()
     body_txt = scraper.get_get_body_txt()
 
@@ -25,6 +26,9 @@ def main():
 
     # 購入馬券リストを作る
     ticket_list = make_ticket(entry, realtime_odds)
+
+    # 購入馬券リストをGSSに書き出す
+    write_gss(ticket_list, timestamp)
 
     # 購入馬券リストをcsvに書き出す
     make_csv(ticket_list, timestamp)
