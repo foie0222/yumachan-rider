@@ -29,7 +29,6 @@ def get_realtime_odds(opdt, rcoursecd, rno):
     return Odds(get_realtime_tan_odds(opdt, rcoursecd, rno), get_realtime_wide_odds(opdt, rcoursecd, rno))
 
 
-
 def get_realtime_tan_odds(opdt, rcoursecd, rno):
     rcourse = convert_rcoursecd_num(rcoursecd)
     realtime_tan_odds = con.get_data(
