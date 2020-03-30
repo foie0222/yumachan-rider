@@ -31,15 +31,15 @@ def make_ticket(entry, realtime_odds):
         odds = list(filter(lambda real_odds: True if real_odds.umano == horse.umano else False, realtime_tan_odds_list))[0]
 
         bet = 0
-        if horse.probability * odds.tanodds >= 135:  # 単勝回収率が135%以上なら払い戻しが3000円超える最低金額をベット
+        if horse.probability * odds.tanodds >= 120:  # 単勝回収率が120%以上なら払い戻しが2000円超える最低金額をベット
+            bet = lowest_bet_for(2000, odds.tanodds)
+        if horse.probability * odds.tanodds >= 130:  # 単勝回収率が130%以上なら払い戻しが3000円超える最低金額をベット
             bet = lowest_bet_for(3000, odds.tanodds)
-        if horse.probability * odds.tanodds >= 145:  # 単勝回収率が145%以上なら払い戻しが5000円超える最低金額をベット
-            bet = lowest_bet_for(5000, odds.tanodds)
 
-        if bet > 0 or horse.sign == 'axis' or index == 0:  # 購入金額が100円以上もしくは軸の表記がある馬、最も高確率の馬は軸馬リストに追加
+        if bet > 0 or horse.sign == 'axis' or index <= 1:  # 購入金額が100円以上もしくは軸の表記がある馬、最も高確率の馬は軸馬リストに追加
             axis_list.append(horse)
 
-        if odds.tanodds < 5 or bet == 0:  # 単勝オッズが5倍以下なら購入見送り
+        if odds.tanodds < 3 or bet == 0:  # 単勝オッズが3倍以下なら購入見送り
             continue
         ticket = Ticket(entry.opdt, entry.rcourcecd, entry.rno, 'TANSYO', 'NORMAL', '', horse.umano, str(bet))
         ticlet_list.append(ticket)
@@ -50,13 +50,13 @@ def make_ticket(entry, realtime_odds):
         odds = list(filter(lambda real_odds: True if real_odds.umano == horse.umano else False, realtime_tan_odds_list))[0]
 
         bet = 0
-        if horse.probability * odds.tanodds >= 180:  # 単勝回収率が180%以上なら払い戻しが3000円超える最低金額をベット
-            bet = lowest_bet_for(3000, odds.tanodds)
+        if horse.probability * odds.tanodds >= 170:  # 単勝回収率が170%以上なら払い戻しが2000円超える最低金額をベット
+            bet = lowest_bet_for(2000, odds.tanodds)
 
         if bet > 0 or horse.sign == 'braid':  # 購入金額が100円以上か紐の表記がある馬は紐馬リストに追加
             braid_list.append(horse)
 
-        if odds.tanodds < 20 or bet == 0 or is_in_list(horse.umano, axis_list):  # 単勝オッズが20倍以下もしくは軸馬なら購入見送り
+        if bet == 0 or is_in_list(horse.umano, axis_list):  # 軸馬なら購入見送り
             continue
         ticket_tan = Ticket(entry.opdt, entry.rcourcecd, entry.rno, 'TANSYO', 'NORMAL', '', horse.umano, str(bet))
         ticlet_list.append(ticket_tan)
@@ -70,9 +70,11 @@ def make_ticket(entry, realtime_odds):
                 continue
             pair_num = make_wide(braid.umano, axis.umano)
             odds = list(filter(lambda real_odds: True if pair_num == real_odds.pair_umano else False, realtime_wide_odds_list))[0]
-            if odds.wideodds < 25:
+
+            if odds.wideodds < 10:
                 continue
-            bet = lowest_bet_for(2500, odds.wideodds)
+            
+            bet = lowest_bet_for(2000, odds.wideodds)
 
             ticket_wide = Ticket(entry.opdt, entry.rcourcecd, entry.rno, 'WIDE', 'NORMAL', '', make_wide(axis.umano, braid.umano),
                                  str(bet))
