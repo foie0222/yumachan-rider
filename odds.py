@@ -139,7 +139,7 @@ def convert_rcoursecd_num(rcoursecd):
 
 
 def convert_float(odds_value):
-    if odds_value == '****' or odds_value == '*****':
+    if '*' in odds_value or '-' in odds_value:
         return 0
     return float(odds_value) / 10
 
