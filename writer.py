@@ -18,6 +18,6 @@ def make_tickets_dir():
 
 # races以下に過去のレースのURLが記載されているtxtファイルを作成
 def write_races_csv(date, url):
-    path = './races/{}.txt'.format(date) 
+    path = './races/{}.txt'.format(date)
     with open(path, mode='a') as f:
         f.write(url + '\n')

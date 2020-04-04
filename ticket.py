@@ -1,5 +1,14 @@
 class Ticket:
-    def __init__(self, opdt, rcourcecd, rno, denomination, method, multi, number, bet_price):
+    def __init__(
+            self,
+            opdt,
+            rcourcecd,
+            rno,
+            denomination,
+            method,
+            multi,
+            number,
+            bet_price):
         self.opdt = opdt
         self.rcourcecd = rcourcecd
         self.rno = int(rno)
@@ -14,8 +23,15 @@ class Ticket:
             self.opdt, self.rcourcecd, self.rno, self.denomination, self.method, self.multi, self.number, self.bet_price)
 
     def to_csv(self):
-        return '{},{},{},{},{},{},{},{}'.format(self.opdt, self.rcourcecd, self.rno, self.denomination, self.method, self.multi,
-                                                self.number, self.bet_price)
+        return '{},{},{},{},{},{},{},{}'.format(
+            self.opdt,
+            self.rcourcecd,
+            self.rno,
+            self.denomination,
+            self.method,
+            self.multi,
+            self.number,
+            self.bet_price)
 
 
 def make_ticket(entry, realtime_odds):
@@ -27,8 +43,9 @@ def make_ticket(entry, realtime_odds):
 
     # 軸馬の単勝馬券を購入
     for index, horse in enumerate(entry.horse_list[:5]):
-    
-        odds = list(filter(lambda real_odds: True if real_odds.umano == horse.umano else False, realtime_tan_odds_list))[0]
+
+        odds = list(filter(lambda real_odds: True if real_odds.umano ==
+                           horse.umano else False, realtime_tan_odds_list))[0]
 
         bet = 0
         if horse.probability * odds.tanodds >= 120:  # 単勝回収率が120%以上なら払い戻しが2000円超える最低金額をベット
@@ -40,14 +57,16 @@ def make_ticket(entry, realtime_odds):
             axis_list.append(horse)
 
         if bet == 0:  # 単勝オッズが3倍以下なら購入見送り
-            continue  
-        ticket = Ticket(entry.opdt, entry.rcourcecd, entry.rno, 'TANSYO', 'NORMAL', '', horse.umano, str(bet))
+            continue
+        ticket = Ticket(entry.opdt, entry.rcourcecd, entry.rno,
+                        'TANSYO', 'NORMAL', '', horse.umano, str(bet))
         ticlet_list.append(ticket)
 
     # 紐馬（紐のサインがある、もしくは単勝回収率170%以上）の複勝を購入
     for horse in entry.horse_list:
 
-        odds = list(filter(lambda real_odds: True if real_odds.umano == horse.umano else False, realtime_tan_odds_list))[0]
+        odds = list(filter(lambda real_odds: True if real_odds.umano ==
+                           horse.umano else False, realtime_tan_odds_list))[0]
 
         bet = 0
         if horse.probability * odds.tanodds >= 170:  # 単勝回収率が170%以上なら払い戻しが2000円超える最低金額をベット
@@ -58,7 +77,8 @@ def make_ticket(entry, realtime_odds):
 
         if bet == 0 or is_in_list(horse.umano, axis_list):  # 軸馬なら購入見送り
             continue
-        ticket_fuku = Ticket(entry.opdt, entry.rcourcecd, entry.rno, 'FUKUSYO', 'NORMAL', '', horse.umano, str(bet))
+        ticket_fuku = Ticket(entry.opdt, entry.rcourcecd, entry.rno,
+                             'FUKUSYO', 'NORMAL', '', horse.umano, str(bet))
         ticlet_list.append(ticket_fuku)
 
     realtime_wide_odds_list = realtime_odds.wide_odds_list
@@ -69,15 +89,27 @@ def make_ticket(entry, realtime_odds):
             if axis.umano == braid.umano:
                 continue
             pair_num = make_wide(braid.umano, axis.umano)
-            odds = list(filter(lambda real_odds: True if pair_num == real_odds.pair_umano else False, realtime_wide_odds_list))[0]
+            odds = list(
+                filter(
+                    lambda real_odds: True if pair_num == real_odds.pair_umano else False,
+                    realtime_wide_odds_list))[0]
 
             if odds.wideodds * braid.probability * axis.probability * 4 * 1.2 / 100 < 120:
                 continue
-            
+
             bet = lowest_bet_for(3000, odds.wideodds)
 
-            ticket_wide = Ticket(entry.opdt, entry.rcourcecd, entry.rno, 'WIDE', 'NORMAL', '', make_wide(axis.umano, braid.umano),
-                                 str(bet))
+            ticket_wide = Ticket(
+                entry.opdt,
+                entry.rcourcecd,
+                entry.rno,
+                'WIDE',
+                'NORMAL',
+                '',
+                make_wide(
+                    axis.umano,
+                    braid.umano),
+                str(bet))
             ticlet_list.append(ticket_wide)
 
     return ticlet_list
@@ -88,6 +120,7 @@ def is_in_list(umano, axis_list):
         if umano == axis.umano:
             return True
     return False
+
 
 def lowest_bet_for(pay, odds):
     bet = 100

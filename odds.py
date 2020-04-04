@@ -13,7 +13,8 @@ class TanOdds:
         self.tanodds = tanodds
 
     def to_string(self):
-        return 'TanOdds=[umano={}, tanodds={}]'.format(self.umano, self.tanodds)
+        return 'TanOdds=[umano={}, tanodds={}]'.format(
+            self.umano, self.tanodds)
 
 
 class WideOdds:
@@ -22,11 +23,15 @@ class WideOdds:
         self.wideodds = wideodds
 
     def to_string(self):
-        return 'WideOdds=[pair_umano={}, wideodds={}]'.format(self.pair_umano, self.wideodds)
+        return 'WideOdds=[pair_umano={}, wideodds={}]'.format(
+            self.pair_umano, self.wideodds)
 
 
 def get_realtime_odds(opdt, rcoursecd, rno):
-    return Odds(get_realtime_tan_odds(opdt, rcoursecd, rno), get_realtime_wide_odds(opdt, rcoursecd, rno))
+    return Odds(
+        get_realtime_tan_odds(
+            opdt, rcoursecd, rno), get_realtime_wide_odds(
+            opdt, rcoursecd, rno))
 
 
 def get_realtime_tan_odds(opdt, rcoursecd, rno):
@@ -50,11 +55,15 @@ def get_realtime_tan_odds(opdt, rcoursecd, rno):
 
 def convert_tan_odds_list(realtime_tan_odds):
     tan_odds_row = str(realtime_tan_odds['TANODDS'][0])
-    tan_odds_value_list = [tan_odds_row[i: i + 4] for i in range(0, len(tan_odds_row), 4)]  # 4桁ずつ分割
+    tan_odds_value_list = [tan_odds_row[i: i + 4]
+                           for i in range(0, len(tan_odds_row), 4)]  # 4桁ずつ分割
 
     tan_odds_list = []
     for index, odds_value in enumerate(tan_odds_value_list):
-        tan_odds_list.append(TanOdds(get_num_from_index(index), convert_float(odds_value)))
+        tan_odds_list.append(
+            TanOdds(
+                get_num_from_index(index),
+                convert_float(odds_value)))
 
     return tan_odds_list
 
@@ -98,12 +107,18 @@ def convert_wide_odds_list(realtime_wide_odds):
     wide_odds_list = []
     for column, row in realtime_wide_odds.iteritems():
         wide_odds_row = str(realtime_wide_odds[column][0])
-        wide_odds_value_list = [wide_odds_row[i: i + 5] for i in range(0, len(wide_odds_row), 5)]  # 5桁ずつ分割
+        wide_odds_value_list = [wide_odds_row[i: i + 5]
+                                for i in range(0, len(wide_odds_row), 5)]  # 5桁ずつ分割
 
         for index, odds_value in enumerate(wide_odds_value_list):
             if odds_value == 'None':
                 continue
-            wide_odds_list.append(WideOdds(get_pair_num_from_column_and_index(column, index), convert_float(odds_value)))
+            wide_odds_list.append(
+                WideOdds(
+                    get_pair_num_from_column_and_index(
+                        column,
+                        index),
+                    convert_float(odds_value)))
 
     return wide_odds_list
 
