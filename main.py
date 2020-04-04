@@ -62,9 +62,6 @@ def verify(opdt):
             # # 購入馬券リストを作る
             ticket_list = make_ticket(entry, realtime_odds)
 
-            for ticket in ticket_list:
-                print(ticket.to_string())
-
             # 検証用のデータを作成
             verification_list = get_verification_list(ticket_list)
 
