@@ -2,7 +2,7 @@ class Ticket:
     def __init__(
             self,
             opdt,
-            rcourcecd,
+            rcoursecd,
             rno,
             denomination,
             method,
@@ -10,7 +10,7 @@ class Ticket:
             number,
             bet_price):
         self.opdt = opdt
-        self.rcourcecd = rcourcecd
+        self.rcoursecd = rcoursecd
         self.rno = int(rno)
         self.denomination = denomination
         self.method = method
@@ -19,13 +19,13 @@ class Ticket:
         self.bet_price = bet_price
 
     def to_string(self):
-        return 'Ticket=[opdt={}, rcourcecd={}, rno={}, denomination={}, method={}, multi={}, number={}, bet_price={}]'.format(
-            self.opdt, self.rcourcecd, self.rno, self.denomination, self.method, self.multi, self.number, self.bet_price)
+        return 'Ticket=[opdt={}, rcoursecd={}, rno={}, denomination={}, method={}, multi={}, number={}, bet_price={}]'.format(
+            self.opdt, self.rcoursecd, self.rno, self.denomination, self.method, self.multi, self.number, self.bet_price)
 
     def to_csv(self):
         return '{},{},{},{},{},{},{},{}'.format(
             self.opdt,
-            self.rcourcecd,
+            self.rcoursecd,
             self.rno,
             self.denomination,
             self.method,
@@ -58,7 +58,7 @@ def make_ticket(entry, realtime_odds):
 
         if bet == 0:  # 単勝オッズが3倍以下なら購入見送り
             continue
-        ticket = Ticket(entry.opdt, entry.rcourcecd, entry.rno,
+        ticket = Ticket(entry.opdt, entry.rcoursecd, entry.rno,
                         'TANSYO', 'NORMAL', '', horse.umano, str(bet))
         ticlet_list.append(ticket)
 
@@ -77,7 +77,7 @@ def make_ticket(entry, realtime_odds):
 
         if bet == 0 or is_in_list(horse.umano, axis_list):  # 軸馬なら購入見送り
             continue
-        ticket_fuku = Ticket(entry.opdt, entry.rcourcecd, entry.rno,
+        ticket_fuku = Ticket(entry.opdt, entry.rcoursecd, entry.rno,
                              'FUKUSYO', 'NORMAL', '', horse.umano, str(bet))
         ticlet_list.append(ticket_fuku)
 
@@ -101,7 +101,7 @@ def make_ticket(entry, realtime_odds):
 
             ticket_wide = Ticket(
                 entry.opdt,
-                entry.rcourcecd,
+                entry.rcoursecd,
                 entry.rno,
                 'WIDE',
                 'NORMAL',
