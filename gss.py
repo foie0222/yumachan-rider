@@ -4,7 +4,7 @@ from oauth2client.service_account import ServiceAccountCredentials
 SPREADSHEET_KEY = '1xjthz5vd-zuAqTI6FXrI_G6ldGIDiXXev4pgnFexJ4o'
 
 
-def write_gss(ticket_list, timestamp):
+def write_gss(record_list, timestamp, is_main):
     scope = ['https://spreadsheets.google.com/feeds',
              'https://www.googleapis.com/auth/drive']
 
@@ -13,6 +13,8 @@ def write_gss(ticket_list, timestamp):
         'credential/keibaautovote.json', scope)
     gc = gspread.authorize(credentials)
 
+    SPREADSHEET_KEY = '1xjthz5vd-zuAqTI6FXrI_G6ldGIDiXXev4pgnFexJ4o' if is_main else '18QNeHz0EgLwKmCSDRNpy152-qkAg20B_VTf8F-2Q1SI'
+
     # 対象のスプレッドシートを取得
     spreadsheet = gc.open_by_key(SPREADSHEET_KEY)
 
@@ -20,22 +22,14 @@ def write_gss(ticket_list, timestamp):
     worksheets = spreadsheet.worksheets()
     sheet_name = timestamp[:8]
     if not existSheet(worksheets, sheet_name):
-        spreadsheet.add_worksheet(title=sheet_name, rows=150, cols=26)
+        spreadsheet.add_worksheet(title=sheet_name, rows=300, cols=26)
 
-    # 対象のシートを指定
+    # 対象のシートを指定（日付ごと）
     worksheet = spreadsheet.worksheet(sheet_name)
 
     # 購入リストを1件ずつスプレッドシートに書き出す
-    for ticket in ticket_list:
-        rowToAdd = [
-            ticket.opdt,
-            ticket.rcourcecd,
-            ticket.rno,
-            ticket.denomination,
-            ticket.method,
-            ticket.number,
-            ticket.bet_price]
-        worksheet.append_row(rowToAdd)
+    for record in record_list:
+        worksheet.append_row(record.to_gss_format())
 
 
 # シートの存在チェック

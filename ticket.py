@@ -33,6 +33,15 @@ class Ticket:
             self.number,
             self.bet_price)
 
+    def to_gss_format(self):
+        return [self.opdt,
+                self.rcoursecd,
+                self.rno,
+                self.denomination,
+                self.method,
+                self.number,
+                self.bet_price]
+
 
 def make_ticket(entry, realtime_odds):
     ticlet_list = []
