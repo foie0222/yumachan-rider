@@ -2,9 +2,9 @@ from horse import get_horse_list
 
 
 class Entry:
-    def __init__(self, opdt, rcourcecd, rno, rname, horse_list):
+    def __init__(self, opdt, rcoursecd, rno, rname, horse_list):
         self.opdt = opdt
-        self.rcourcecd = rcourcecd
+        self.rcoursecd = rcoursecd
         self.rno = rno
         self.rname = rname
         self.horse_list = horse_list
@@ -12,7 +12,7 @@ class Entry:
 
 def get_entry(header_txt, body_txt):
     opdt = get_opdt(header_txt)
-    rcoursecd = get_rcourcecd(header_txt)
+    rcoursecd = get_rcoursecd(header_txt)
     rno = get_rno(header_txt)
     rname = get_rname(header_txt)
     horser_list = get_horse_list(body_txt)
@@ -24,7 +24,7 @@ def get_opdt(row):
     return row[0:8]
 
 
-def get_rcourcecd(row):
+def get_rcoursecd(row):
     if '札幌' in row:
         return 'SAPPORO'
     if '函館' in row:
