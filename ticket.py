@@ -27,14 +27,14 @@ def make_ticket(entry, realtime_odds):
 
     # 軸馬の単勝馬券を購入
     for index, horse in enumerate(entry.horse_list[:5]):
-
+    
         odds = list(filter(lambda real_odds: True if real_odds.umano == horse.umano else False, realtime_tan_odds_list))[0]
 
         bet = 0
         if horse.probability * odds.tanodds >= 120:  # 単勝回収率が120%以上なら払い戻しが2000円超える最低金額をベット
             bet = lowest_bet_for(2000, odds.tanodds)
         if horse.probability * odds.tanodds >= 130:  # 単勝回収率が130%以上なら払い戻しが3000円超える最低金額をベット
-            bet = lowest_bet_for(3000, odds.tanodds)
+            bet = lowest_bet_for(3500, odds.tanodds)
 
         if horse.probability > 10 or horse.sign == 'axis':  # 購入金額が100円以上もしくは軸の表記がある馬、最も高確率の馬は軸馬リストに追加
             axis_list.append(horse)
@@ -51,7 +51,7 @@ def make_ticket(entry, realtime_odds):
 
         bet = 0
         if horse.probability * odds.tanodds >= 170:  # 単勝回収率が170%以上なら払い戻しが2000円超える最低金額をベット
-            bet = lowest_bet_for(2000, odds.tanodds)
+            bet = lowest_bet_for(3000, odds.tanodds)
 
         if bet >= 100 or horse.sign == 'braid':  # 購入金額が100円以上か紐の表記がある馬は紐馬リストに追加
             braid_list.append(horse)
@@ -71,10 +71,10 @@ def make_ticket(entry, realtime_odds):
             pair_num = make_wide(braid.umano, axis.umano)
             odds = list(filter(lambda real_odds: True if pair_num == real_odds.pair_umano else False, realtime_wide_odds_list))[0]
 
-            if odds.wideodds * braid.probability * axis.probability * 4 * 1.2 / 100 < 100:
+            if odds.wideodds * braid.probability * axis.probability * 4 * 1.2 / 100 < 120:
                 continue
             
-            bet = lowest_bet_for(2000, odds.wideodds)
+            bet = lowest_bet_for(3000, odds.wideodds)
 
             ticket_wide = Ticket(entry.opdt, entry.rcourcecd, entry.rno, 'WIDE', 'NORMAL', '', make_wide(axis.umano, braid.umano),
                                  str(bet))
