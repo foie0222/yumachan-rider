@@ -22,7 +22,7 @@ class Verification:
                 self.ticket.number,
                 int(self.ticket.bet_price),
                 1 if self.is_hit else 0,  # 的中なら1を返す、外れなら0
-                float(self.refund) / 100]
+                int(self.refund)]
 
 
 def get_verification_list(ticket_list):
