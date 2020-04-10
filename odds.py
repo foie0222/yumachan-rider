@@ -2,8 +2,9 @@ import dbconnector as con
 
 
 class Odds:
-    def __init__(self, tan_odds_list, wide_odds_list):
+    def __init__(self, tan_odds_list, fuku_min_odds_list, wide_odds_list):
         self.tan_odds_list = tan_odds_list
+        self.fuku_min_odds_list = fuku_min_odds_list
         self.wide_odds_list = wide_odds_list
 
 
@@ -15,6 +16,16 @@ class TanOdds:
     def to_string(self):
         return 'TanOdds=[umano={}, tanodds={}]'.format(
             self.umano, self.tanodds)
+
+
+class FukuMinOdds:
+    def __init__(self, umano, fuku_min_odds):
+        self.umano = umano
+        self.fuku_min_odds = fuku_min_odds
+
+    def to_string(self):
+        return 'FukuMinOdds=[umano={}, fuku_min_odds={}]'.format(
+            self.umano, self.fuku_min_odds)
 
 
 class WideOdds:
@@ -30,6 +41,7 @@ class WideOdds:
 def get_realtime_odds(opdt, rcoursecd, rno):
     return Odds(
         get_realtime_tan_odds(
+            opdt, rcoursecd, rno), get_realtime_fuku_min_odds(
             opdt, rcoursecd, rno), get_realtime_wide_odds(
             opdt, rcoursecd, rno))
 
@@ -66,6 +78,40 @@ def convert_tan_odds_list(realtime_tan_odds):
                 convert_float(odds_value)))
 
     return tan_odds_list
+
+
+def get_realtime_fuku_min_odds(opdt, rcoursecd, rno):
+    rcourse = convert_rcoursecd_num(rcoursecd)
+    realtime_fuku_min_odds = con.get_data(
+        """
+        select
+            FUKMINODDS
+        from
+            ODDSTFWK
+        where
+            OPDT = '{}'
+        and
+            rcoursecd = '{}'
+        and
+            rno = '{}'
+        """.format(opdt, rcourse, rno)
+    )
+    return convert_fuku_min_odds_list(realtime_fuku_min_odds)
+
+
+def convert_fuku_min_odds_list(realtime_fuku_min_odds):
+    fuku_min_odds_row = str(realtime_fuku_min_odds['FUKMINODDS'][0])
+    fuku_min_odds_value_list = [fuku_min_odds_row[i: i + 4]
+                                for i in range(0, len(fuku_min_odds_row), 4)]  # 4桁ずつ分割
+
+    fuku_min_odds_list = []
+    for index, fuku_min_odds_value in enumerate(fuku_min_odds_value_list):
+        fuku_min_odds_list.append(
+            FukuMinOdds(
+                get_num_from_index(index),
+                convert_float(fuku_min_odds_value)))
+
+    return fuku_min_odds_list
 
 
 def get_realtime_wide_odds(opdt, rcoursecd, rno):
@@ -161,7 +207,3 @@ def convert_float(odds_value):
 
 def get_num_from_index(index):
     return str(index + 1).zfill(2)
-
-
-if __name__ == '__main__':
-    get_realtime_wide_odds('20200322', 'HANSHIN', '12')
