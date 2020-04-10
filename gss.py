@@ -1,7 +1,6 @@
 import gspread
 from oauth2client.service_account import ServiceAccountCredentials
-
-SPREADSHEET_KEY = '1xjthz5vd-zuAqTI6FXrI_G6ldGIDiXXev4pgnFexJ4o'
+import time
 
 
 def write_gss(record_list, timestamp, is_main):
@@ -13,7 +12,7 @@ def write_gss(record_list, timestamp, is_main):
         'credential/keibaautovote.json', scope)
     gc = gspread.authorize(credentials)
 
-    SPREADSHEET_KEY = '1xjthz5vd-zuAqTI6FXrI_G6ldGIDiXXev4pgnFexJ4o' if is_main else '18QNeHz0EgLwKmCSDRNpy152-qkAg20B_VTf8F-2Q1SI'
+    SPREADSHEET_KEY = '1xjthz5vd-zuAqTI6FXrI_G6ldGIDiXXev4pgnFexJ4o' if is_main else '1306LwCs_oSlaDZKg6aIlG_3XDmUkldJ3-iN1Yhzmtw0'
 
     # 対象のスプレッドシートを取得
     spreadsheet = gc.open_by_key(SPREADSHEET_KEY)
@@ -30,6 +29,7 @@ def write_gss(record_list, timestamp, is_main):
     # 購入リストを1件ずつスプレッドシートに書き出す
     for record in record_list:
         worksheet.append_row(record.to_gss_format())
+        time.sleep(1)
 
 
 # シートの存在チェック
