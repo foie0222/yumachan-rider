@@ -85,7 +85,8 @@ def get_fuku_refund_list(opdt, rcoursecd, rno):
 def make_fuku_refund_list(refund_df):
     fuku_refund_list = []
     for NO in ['1', '2', '3', '4', '5']:
-        if refund_df['FUKNO' + NO][0] is None:  # 値がなかったら空
+        fuku_no = refund_df['FUKNO' + NO][0]
+        if fuku_no is None or fuku_no == '00':
             continue
         fuku_refund_list.append(Refund(
             str(refund_df['FUKNO' + NO][0]).zfill(2), refund_df['FUKRFD' + NO][0]))
