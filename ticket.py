@@ -82,7 +82,7 @@ def make_ticket(entry, realtime_odds):
 
         bet = 0
         if fuku_probability * odds.fuku_min_odds >= 120:  # 複勝回収率が120%以上なら払い戻しが3500円超える最低金額をベット
-            bet = lowest_bet_for(3000, odds.fuku_min_odds)
+            bet = lowest_bet_for(4000, odds.fuku_min_odds)
 
         if bet >= 100 or horse.sign == 'braid':
             bet += 100
@@ -116,7 +116,7 @@ def make_ticket(entry, realtime_odds):
                     braid_in_wide_probability / 100 < 300:
                 continue
 
-            bet = lowest_bet_for(3000, odds.wideodds)
+            bet = lowest_bet_for(3500, odds.wideodds)
 
             ticket_wide = Ticket(
                 entry.opdt,
