@@ -43,7 +43,7 @@ class Ticket:
                 self.denomination,
                 self.method,
                 self.number,
-                self.bet_price]
+                int(self.bet_price)]
 
 
 def make_ticket(entry, realtime_odds):
