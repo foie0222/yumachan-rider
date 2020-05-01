@@ -39,6 +39,7 @@ def main():
 
 
 def verify(opdt):
+    all_verification_list = []
     with open('races/' + opdt + '.txt') as lines:
         for line in lines:
             URL = line.rstrip()
@@ -65,14 +66,27 @@ def verify(opdt):
             # 検証用のデータを作成
             verification_list = get_verification_list(ticket_list)
 
+            all_verification_list.extend(verification_list)
+
             for verification in verification_list:
                 print(verification.to_string())
 
-            # # 購入馬券リストをGSSに書き出す
-            write_gss(verification_list, opdt, False)
+            # # # 購入馬券リストをGSSに書き出す
+            # write_gss(verification_list, opdt, False)
 
-            # 次のループまで3秒待つ
-            time.sleep(3)
+            # # 次のループまで3秒待つ
+            # time.sleep(3)
+
+    all_bet = 0
+    all_refund = 0
+    for verification in all_verification_list:
+        all_bet += int(verification.ticket.bet_price)
+        all_refund += int(verification.ticket.bet_price) * \
+            verification.refund / 100
+
+    print('opdt is       ', opdt)
+    print('all_bet is    ', '{:.0f}'.format(all_bet))
+    print('all_refund is ', '{:.0f}'.format(all_refund))
 
 
 # 検証のためのURLを取得するためのロジック

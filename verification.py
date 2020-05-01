@@ -9,7 +9,7 @@ class Verification:
 
     def to_string(self):
         return 'Verification=[{}, is_hit={}, refund={}]'.format(
-            self.ticket.to_string(),
+            self.ticket.to_verification_format(),
             self.is_hit,
             self.refund)
 

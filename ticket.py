@@ -11,7 +11,8 @@ class Ticket:
             method,
             multi,
             number,
-            bet_price):
+            bet_price,
+            expected_value):
         self.opdt = opdt
         self.rcoursecd = rcoursecd
         self.rno = int(rno)
@@ -20,6 +21,7 @@ class Ticket:
         self.multi = multi
         self.number = number
         self.bet_price = bet_price
+        self.expected_value = expected_value
 
     def to_string(self):
         return 'Ticket=[opdt={}, rcoursecd={}, rno={}, denomination={}, method={}, multi={}, number={}, bet_price={}]'.format(
@@ -45,6 +47,10 @@ class Ticket:
                 self.number,
                 int(self.bet_price)]
 
+    def to_verification_format(self):
+        return 'VerificationTicket=[opdt={}, rcoursecd={}, rno={}, denomination={}, number={}, bet_price={}, expected_value={}]'.format(
+            self.opdt, self.rcoursecd, self.rno, self.denomination, self.number, self.bet_price, '{:.0f}'.format(self.expected_value))
+
 
 def make_ticket(entry, realtime_odds):
     ticlet_list = []
@@ -67,8 +73,16 @@ def make_ticket(entry, realtime_odds):
 
         if bet == 0:
             continue
-        ticket = Ticket(entry.opdt, entry.rcoursecd, entry.rno,
-                        'TANSYO', 'NORMAL', '', horse.umano, str(bet))
+        ticket = Ticket(
+            entry.opdt,
+            entry.rcoursecd,
+            entry.rno,
+            'TANSYO',
+            'NORMAL',
+            '',
+            horse.umano,
+            str(bet),
+            expected_value)
         ticlet_list.append(ticket)
 
     # 複勝購入
@@ -81,7 +95,8 @@ def make_ticket(entry, realtime_odds):
         fuku_probability = get_fuku_probability(horse.probability)
 
         bet = 0
-        if fuku_probability * odds.fuku_min_odds >= 120:  # 複勝回収率が120%以上なら払い戻しが3500円超える最低金額をベット
+        expected_value = fuku_probability * odds.fuku_min_odds
+        if expected_value >= 120:  # 複勝回収率が120%以上なら払い戻しが3500円超える最低金額をベット
             bet = lowest_bet_for(4000, odds.fuku_min_odds)
 
         if bet >= 100 or horse.sign == 'braid':
@@ -90,33 +105,43 @@ def make_ticket(entry, realtime_odds):
         if bet == 0:
             continue
 
-        ticket_fuku = Ticket(entry.opdt, entry.rcoursecd, entry.rno,
-                             'FUKUSYO', 'NORMAL', '', horse.umano, str(bet))
+        ticket_fuku = Ticket(
+            entry.opdt,
+            entry.rcoursecd,
+            entry.rno,
+            'FUKUSYO',
+            'NORMAL',
+            '',
+            horse.umano,
+            str(bet),
+            expected_value)
         ticlet_list.append(ticket_fuku)
         braid_list.append(horse)
 
     realtime_wide_odds_list = realtime_odds.wide_odds_list
 
     # ワイドを購入
-    for axis in axis_list:
-        for braid in braid_list:
-            if axis.umano == braid.umano:
-                continue
-
-            pair_num = make_wide(axis.umano, braid.umano)
+    for i, horse1 in enumerate(entry.horse_list):
+        for horse2 in entry.horse_list[i + 1:]:
+            pair_num = make_wide(horse1.umano, horse2.umano)
             odds = list(
                 filter(
                     lambda real_odds: True if pair_num == real_odds.pair_umano else False,
                     realtime_wide_odds_list))[0]
 
-            axis_in_wide_probability = get_fuku_probability(axis.probability)
-            braid_in_wide_probability = get_fuku_probability(braid.probability)
+            horse1_in_wide_probability = get_fuku_probability(
+                horse1.probability)
+            horse2_in_wide_probability = get_fuku_probability(
+                horse2.probability)
 
-            if odds.wideodds * axis_in_wide_probability * \
-                    braid_in_wide_probability / 100 < 300:
+            expected_value = odds.wideodds * horse1_in_wide_probability * \
+                horse2_in_wide_probability / 100
+
+            if expected_value < 200 or expected_value > 350:
                 continue
 
-            bet = lowest_bet_for(3500, odds.wideodds)
+            # bet = lowest_bet_for(expected_value * 20, odds.wideodds)
+            bet = 100
 
             ticket_wide = Ticket(
                 entry.opdt,
@@ -126,9 +151,10 @@ def make_ticket(entry, realtime_odds):
                 'NORMAL',
                 '',
                 make_wide(
-                    axis.umano,
-                    braid.umano),
-                str(bet))
+                    horse1.umano,
+                    horse2.umano),
+                str(bet),
+                expected_value)
             ticlet_list.append(ticket_wide)
 
     return ticlet_list
