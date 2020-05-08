@@ -97,7 +97,7 @@ def make_ticket(entry, realtime_odds):
 
         bet = 0
         expected_value = fuku_probability * odds.fuku_min_odds
-        if expected_value >= 110:  # 複勝回収率が120%以上なら払い戻しが3500円超える最低金額をベット
+        if expected_value >= 120:  # 複勝回収率が120%以上なら払い戻しが3500円超える最低金額をベット
             bet = lowest_bet_for(expected_value * 35, odds.fuku_min_odds)
 
         if bet == 0:
