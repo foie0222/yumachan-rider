@@ -60,6 +60,8 @@ def make_ticket(entry, realtime_odds):
     # 単勝購入
     realtime_tan_odds_list = realtime_odds.tan_odds_list
     for horse in entry.horse_list[:5]:
+        # 軸馬一覧に追加
+        axis_list.append(horse)
 
         odds = list(filter(lambda real_odds: True if real_odds.umano ==
                            horse.umano else False, realtime_tan_odds_list))[0]
@@ -82,9 +84,6 @@ def make_ticket(entry, realtime_odds):
             str(bet),
             expected_value)
         ticlet_list.append(ticket)
-
-        # 軸馬一覧に追加
-        axis_list.append(horse)
 
     # 複勝購入
     fuku_min_odds_list = realtime_odds.fuku_min_odds_list
