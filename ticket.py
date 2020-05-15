@@ -137,7 +137,7 @@ def make_ticket(entry, realtime_odds):
 
             bet = 0
             if expected_value >= 500 and odds.wideodds <= 300 and odds.wideodds >= 30:
-                bet = lowest_bet_for(expected_value * 30, odds.wideodds)
+                bet = lowest_bet_for(expected_value * 100, odds.wideodds)
             else:
                 continue
 
