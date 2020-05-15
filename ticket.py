@@ -12,7 +12,8 @@ class Ticket:
             multi,
             number,
             bet_price,
-            expected_value):
+            expected_value,
+            odds):
         self.opdt = opdt
         self.rcoursecd = rcoursecd
         self.rno = int(rno)
@@ -21,7 +22,8 @@ class Ticket:
         self.multi = multi
         self.number = number
         self.bet_price = bet_price
-        self.expected_value = expected_value
+        self.expected_value = int(expected_value)
+        self.odds = odds
 
     def to_string(self):
         return 'Ticket=[opdt={}, rcoursecd={}, rno={}, denomination={}, method={}, multi={}, number={}, bet_price={}]'.format(
@@ -43,13 +45,14 @@ class Ticket:
                 self.rcoursecd,
                 self.rno,
                 self.denomination,
-                self.method,
                 self.number,
-                int(self.bet_price)]
+                int(self.bet_price),
+                int(self.expected_value),
+                self.odds]
 
     def to_verification_format(self):
         return 'Ticket=[opdt={}, rcoursecd={}, rno={}, denomination={}, number={}, bet_price={}, expected_value={}]'.format(
-            self.opdt, self.rcoursecd, self.rno, self.denomination, self.number, self.bet_price, '{:.0f}'.format(self.expected_value))
+            self.opdt, self.rcoursecd, self.rno, self.denomination, self.number, self.bet_price, self.expected_value)
 
 
 def make_ticket(entry, realtime_odds):
@@ -59,20 +62,18 @@ def make_ticket(entry, realtime_odds):
 
     # 単勝購入
     realtime_tan_odds_list = realtime_odds.tan_odds_list
-    for horse in entry.horse_list[:5]:
-        # 軸馬一覧に追加
-        axis_list.append(horse)
+    for horse in entry.horse_list:
 
         odds = list(filter(lambda real_odds: True if real_odds.umano ==
                            horse.umano else False, realtime_tan_odds_list))[0]
 
         bet = 0
         expected_value = horse.probability * odds.tanodds
-        if expected_value >= 120:  # 単勝回収率が120%以上なら期待値に応じてベット
-            bet = lowest_bet_for(expected_value * 20, odds.tanodds)
-
-        if bet == 0:
+        if expected_value >= 200 and odds.tanodds <= 30 and odds.tanodds >= 3.0:
+            bet = lowest_bet_for(expected_value * 60, odds.tanodds)
+        else:
             continue
+
         ticket = Ticket(
             entry.opdt,
             entry.rcoursecd,
@@ -82,7 +83,8 @@ def make_ticket(entry, realtime_odds):
             '',
             horse.umano,
             str(bet),
-            expected_value)
+            expected_value,
+            odds.tanodds)
         ticlet_list.append(ticket)
 
     # 複勝購入
@@ -92,14 +94,13 @@ def make_ticket(entry, realtime_odds):
         odds = list(filter(lambda real_odds: True if real_odds.umano ==
                            horse.umano else False, fuku_min_odds_list))[0]
 
-        fuku_probability = get_fuku_probability(horse.probability)
+        fuku_probability = get_fuku_probability(horse.probability, entry)
 
         bet = 0
         expected_value = fuku_probability * odds.fuku_min_odds
-        if expected_value >= 120:  # 複勝回収率が120%以上なら払い戻しが3500円超える最低金額をベット
-            bet = lowest_bet_for(expected_value * 35, odds.fuku_min_odds)
-
-        if bet == 0:
+        if expected_value >= 120 and odds.fuku_min_odds <= 7.0 and odds.fuku_min_odds >= 1.5:
+            bet = lowest_bet_for(expected_value * 100, odds.fuku_min_odds)
+        else:
             continue
 
         ticket_fuku = Ticket(
@@ -111,37 +112,34 @@ def make_ticket(entry, realtime_odds):
             '',
             horse.umano,
             str(bet),
-            expected_value)
+            expected_value,
+            odds.fuku_min_odds)
         ticlet_list.append(ticket_fuku)
-
-        # 紐馬一覧に追加
-        braid_list.append(horse)
 
     realtime_wide_odds_list = realtime_odds.wide_odds_list
 
-    wide_horse_list = merge_list(axis_list, braid_list)
-
     # ワイドを購入
-    for i, horse1 in enumerate(wide_horse_list):
-        for horse2 in wide_horse_list[i + 1:]:
+    for i, horse1 in enumerate(entry.horse_list):
+        for horse2 in entry.horse_list[i + 1:]:
             pair_num = make_wide(horse1.umano, horse2.umano)
             odds = list(
                 filter(
                     lambda real_odds: True if pair_num == real_odds.pair_umano else False,
                     realtime_wide_odds_list))[0]
 
-            horse1_in_wide_probability = get_fuku_probability(
+            horse1_in_wide_probability = get_wide_probability(
                 horse1.probability)
-            horse2_in_wide_probability = get_fuku_probability(
+            horse2_in_wide_probability = get_wide_probability(
                 horse2.probability)
 
             expected_value = odds.wideodds * horse1_in_wide_probability * \
                 horse2_in_wide_probability / 100
 
-            if expected_value < 200 or odds.wideodds < 50:
+            bet = 0
+            if expected_value >= 500 and odds.wideodds <= 300 and odds.wideodds >= 30:
+                bet = lowest_bet_for(expected_value * 30, odds.wideodds)
+            else:
                 continue
-
-            bet = lowest_bet_for(expected_value * 30, odds.wideodds)
 
             ticket_wide = Ticket(
                 entry.opdt,
@@ -154,26 +152,11 @@ def make_ticket(entry, realtime_odds):
                     horse1.umano,
                     horse2.umano),
                 str(bet),
-                expected_value)
+                expected_value,
+                odds.wideodds)
             ticlet_list.append(ticket_wide)
 
     return ticlet_list
-
-
-def merge_list(axis_list, braid_list):
-    res_list = axis_list
-    for braid in braid_list:
-        if is_in_list(braid.umano, axis_list):
-            continue
-        res_list.append(braid)
-    return res_list
-
-
-def is_in_list(umano, axis_list):
-    for axis in axis_list:
-        if umano == axis.umano:
-            return True
-    return False
 
 
 def lowest_bet_for(pay, odds):
@@ -191,23 +174,20 @@ def make_wide(umano1, umano2):
     return umano2 + '-' + umano1
 
 
-# 軸馬と1番高確率の馬のリスト
-def get_axis_list(horse_list):
-    axis_list = [horse_list[0]]
-
-    for horse in horse_list:
-        if horse.sign == 'axis':
-            axis_list.append(horse)
-
-    return axis_list
-
-
 # 単勝率から複勝率を算出
-def get_fuku_probability(tan_probability):
-    res = -0.00001 * tan_probability ** 4 + 0.0021 * tan_probability ** 3 - \
-        0.1344 * tan_probability ** 2 + 4.4261 * tan_probability + 0.8811
-    return res if res < 100 else 100
+def get_fuku_probability(x, entry):
+    res = 5.8962 * \
+        x ** 0.7112 if len(entry.horse_list) > 7 else get_ren_probability(x)  # 出走頭数に応じて
+    return res if res < 95 else 95
 
 
-if __name__ == '__main__':
-    print(get_fuku_probability(1.7))
+# 単勝率から連対率を算出
+def get_ren_probability(x):
+    res = 3.5097 * x ** 0.794
+    return res if res < 90 else 90
+
+
+# 単勝率からワイド率を算出
+def get_wide_probability(x):
+    res = 5.8962 * x ** 0.7112
+    return res if res < 95 else 95

@@ -24,6 +24,10 @@ class Verification:
                 1 if self.is_hit else 0,  # 的中なら1を返す、外れなら0
                 int(self.refund)]
 
+    def to_csv(self):
+        res_list = [1 if self.is_hit else 0, self.refund]
+        return self.ticket.to_gss_format() + res_list
+
 
 def get_verification_list(ticket_list):
     verification_list = []
