@@ -12,7 +12,7 @@ def write_gss(record_list, timestamp, is_main):
         'credential/keibaautovote.json', scope)
     gc = gspread.authorize(credentials)
 
-    SPREADSHEET_KEY = '1xjthz5vd-zuAqTI6FXrI_G6ldGIDiXXev4pgnFexJ4o' if is_main else '1306LwCs_oSlaDZKg6aIlG_3XDmUkldJ3-iN1Yhzmtw0'
+    SPREADSHEET_KEY = '1xjthz5vd-zuAqTI6FXrI_G6ldGIDiXXev4pgnFexJ4o' if is_main else '1WE4R9B0ua9u72_tsKgKxGREtCH9EhKPon-vXOANV8KI'
 
     # 対象のスプレッドシートを取得
     spreadsheet = gc.open_by_key(SPREADSHEET_KEY)
