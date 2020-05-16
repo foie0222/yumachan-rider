@@ -1,14 +1,21 @@
 import time
 import fdb
 import pandas as pd
+import os
+from os.path import join, dirname
+from dotenv import load_dotenv
+
+# 環境変数の読み取り
+dotenv_path = join(dirname(__file__), '.env')
+load_dotenv(dotenv_path)
 
 
 def make_connect():
     conn = fdb.connect(
-        dsn='****',
-        port=0000,
-        user='****',
-        password='****',
+        dsn=os.environ.get('DSN'),
+        port=os.environ.get('PORT'),
+        user=os.environ.get('DBUSER'),
+        password=os.environ.get('PASSWORD'),
         charset='SJIS_0208'
     )
     return conn
@@ -22,6 +29,5 @@ def get_data(sql):
     conn.close()
 
     elapsed_time = time.time() - start
-    print("elapsed_time : {:.1f}".format(elapsed_time) + " [sec]")
 
     return df
