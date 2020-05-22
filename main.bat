@@ -7,5 +7,3 @@ set tm=%tm:~0,6%
 set TIMESTAMP=%dt%%tm%
 
 C:\Users\foie\AppData\Local\Programs\Python\Python38-32\python.exe C:\develop\git\yumachan-rider\main.py %TIMESTAMP%
-
-ipatgo.exe file %IPATGO% .\tickets\ticket_%TIMESTAMP%.csv
