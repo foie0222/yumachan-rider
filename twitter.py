@@ -45,9 +45,9 @@ def tweet(entry, ticket_list):
             'public-DraftStyleDefault-block')
 
         opdt = entry.opdt
-        rcourse = entry.rcourse
+        rcoursecd = entry.rcoursecd
         rno = entry.rno
-        title = opdt + ' ' + convert_to_kanji(rcourse) + ' ' + rno + 'R'
+        title = opdt + ' ' + convert_to_kanji(rcoursecd) + ' ' + rno + 'R'
 
         content = title + '\n'
         if len(ticket_list) == 0:
