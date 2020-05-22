@@ -35,7 +35,7 @@ def main():
     make_csv(ticket_list, timestamp)
 
     # ipatgoで投票
-    vote_status = vote()
+    vote_status = vote(timestamp)
 
     # 購入馬券リストをGSSに書き出す
     write_gss(ticket_list, timestamp, True)
