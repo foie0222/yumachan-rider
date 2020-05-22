@@ -3,7 +3,10 @@ import os
 
 def vote(timestamp):
     try:
-        return os.system(r'ipatgo.exe file %IPATGO% .\tickets\ticket_' + timestamp + '.csv')
+        return os.system(
+            r'ipatgo.exe file %IPATGO% .\tickets\ticket_' +
+            timestamp +
+            '.csv')
 
     except Exception as e:
         print(e.args)
