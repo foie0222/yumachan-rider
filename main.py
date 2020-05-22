@@ -36,7 +36,7 @@ def main():
     make_csv(ticket_list, timestamp)
 
     # ipatgoで投票
-    vote_status = vote(timestamp)
+    vote(timestamp)
 
     # tweet
     tweet(entry, ticket_list)
