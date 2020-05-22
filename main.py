@@ -5,6 +5,7 @@ from entry import get_entry
 from ticket import make_ticket
 from writer import make_csv, write_races_csv, write_result_to_csv
 from verification import get_verification_list
+from ipatgo import vote
 import sys
 import time
 import glob
@@ -30,11 +31,14 @@ def main():
     # 購入馬券リストを作る
     ticket_list = make_ticket(entry, realtime_odds)
 
-    # 購入馬券リストをGSSに書き出す
-    write_gss(ticket_list, timestamp, True)
-
     # 購入馬券リストをcsvに書き出す
     make_csv(ticket_list, timestamp)
+
+    # ipatgoで投票
+    vote_status = vote()
+
+    # 購入馬券リストをGSSに書き出す
+    write_gss(ticket_list, timestamp, True)
 
     time.sleep(3)
 
