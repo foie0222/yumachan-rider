@@ -6,6 +6,7 @@ from ticket import make_ticket
 from writer import make_csv, write_races_csv, write_result_to_csv
 from verification import get_verification_list
 from ipatgo import vote
+from twitter import tweet
 import sys
 import time
 import glob
@@ -36,6 +37,9 @@ def main():
 
     # ipatgoで投票
     vote_status = vote(timestamp)
+
+    # tweet
+    tweet(entry, ticket_list)
 
     # 購入馬券リストをGSSに書き出す
     write_gss(ticket_list, timestamp, True)

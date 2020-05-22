@@ -54,6 +54,10 @@ class Ticket:
         return 'Ticket=[opdt={}, rcoursecd={}, rno={}, denomination={}, number={}, bet_price={}, expected_value={}]'.format(
             self.opdt, self.rcoursecd, self.rno, self.denomination, self.number, self.bet_price, self.expected_value)
 
+    def to_twitter_format(self):
+        return convert_to_kanji(str(self.denomination)) + ' ' +  \
+            str(self.number) + ' ' + str(self.bet_price) + '円'
+
 
 def make_ticket(entry, realtime_odds):
     ticlet_list = []
@@ -191,3 +195,12 @@ def get_ren_probability(x):
 def get_wide_probability(x):
     res = 5.8962 * x ** 0.7112
     return res if res < 95 else 95
+
+
+def convert_to_kanji(txt):
+    if 'TANSYO' in txt:
+        return '単勝'
+    if 'FUKUSYO' in txt:
+        return '複勝'
+    if 'WIDE' in txt:
+        return 'ワイド'
