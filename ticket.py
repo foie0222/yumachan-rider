@@ -73,7 +73,7 @@ def make_ticket(entry, realtime_odds):
 
         bet = 0
         expected_value = horse.probability * odds.tanodds
-        if expected_value >= 200 and odds.tanodds <= 30 and odds.tanodds >= 3.0:
+        if expected_value >= 180 and odds.tanodds <= 300 and odds.tanodds >= 3.0:
             bet = lowest_bet_for(expected_value * 60, odds.tanodds)
         else:
             continue
@@ -140,7 +140,7 @@ def make_ticket(entry, realtime_odds):
                 horse2_in_wide_probability / 100
 
             bet = 0
-            if expected_value >= 500 and odds.wideodds <= 300 and odds.wideodds >= 30:
+            if expected_value >= 300 and odds.wideodds <= 150 and odds.wideodds >= 20:
                 bet = lowest_bet_for(expected_value * 10, odds.wideodds)
             else:
                 continue
