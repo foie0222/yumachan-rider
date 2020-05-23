@@ -61,8 +61,6 @@ class Ticket:
 
 def make_ticket(entry, realtime_odds):
     ticlet_list = []
-    axis_list = []
-    braid_list = []
 
     # 単勝購入
     realtime_tan_odds_list = realtime_odds.tan_odds_list
@@ -141,7 +139,7 @@ def make_ticket(entry, realtime_odds):
 
             bet = 0
             if expected_value >= 300 and odds.wideodds <= 150 and odds.wideodds >= 20:
-                bet = lowest_bet_for(expected_value * 10, odds.wideodds)
+                bet = lowest_bet_for(expected_value * 20, odds.wideodds)
             else:
                 continue
 
