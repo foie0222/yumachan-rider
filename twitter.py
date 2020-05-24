@@ -6,6 +6,7 @@ import subprocess
 import io
 import re
 import base64
+import win32clipboard
 from os.path import join, dirname
 from dotenv import load_dotenv
 from selenium import webdriver
@@ -53,10 +54,7 @@ def tweet_with_jpg(entry, ticket_list):
             'public-DraftStyleDefault-block')
 
         # 画像ファイルをクリップボードにコピー
-        subprocess.run(
-            ["osascript",
-             "-e",
-             'set the clipboard to (read (POSIX file "./image/vote.jpg") as JPEG picture)'])
+        copy_to_clipboard()
 
         # 画像をペースト
         elem.send_keys(Keys.SHIFT, Keys.INSERT)
@@ -73,7 +71,7 @@ def tweet_with_jpg(entry, ticket_list):
 
 def make_jpg(entry, ticket_list):
     # base64化された画像データを用意
-    data = get_base64()
+    data = get_base64('./image/template.jpg')
 
     # 頭のいらない部分を取り除いた上で、バイト列にエンコード
     image_data_bytes = re.sub(
@@ -103,6 +101,26 @@ def make_jpg(entry, ticket_list):
             content = content + ticket.to_twitter_format() + '\n'
     draw.text((5, 0), content, font=fnt)
     im.save("./image/vote.jpg")
+
+
+def copy_to_clipboard():
+    data = get_base64('./image/vote.jpg')
+    if os.name == 'nt':
+        send_to_clipboard(win32clipboard.CF_DIB, data)
+
+    if os.name == 'posix':
+        subprocess.run(
+            ["osascript",
+             "-e",
+             'set the clipboard to (read (POSIX file "./image/vote.jpg") as JPEG picture)'])
+
+
+def send_to_clipboard(clip_type, data):
+    # クリップボードをクリアして、データをセットする
+    win32clipboard.OpenClipboard()
+    win32clipboard.EmptyClipboard()
+    win32clipboard.SetClipboardData(clip_type, data)
+    win32clipboard.CloseClipboard()
 
 
 def send_tweet(elem):
@@ -150,7 +168,6 @@ def convert_to_kanji(txt):
         return '小倉'
 
 
-def get_base64():
-    img_file = './image/template.jpg'
+def get_base64(img_file):
     b64 = base64.encodestring(open(img_file, 'rb').read())
     return b64.decode('utf8')
