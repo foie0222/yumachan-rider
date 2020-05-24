@@ -2,6 +2,10 @@ import time
 import sys
 import chromedriver_binary
 import os
+import subprocess
+import io
+import re
+import base64
 from os.path import join, dirname
 from dotenv import load_dotenv
 from selenium import webdriver
@@ -9,6 +13,7 @@ from selenium.webdriver.common.keys import Keys
 from requests import request as rq
 from selenium.webdriver import Chrome, ChromeOptions
 from selenium.webdriver.common.keys import Keys
+from PIL import Image, ImageDraw, ImageFont
 
 # 環境変数の読み取り
 dotenv_path = join(dirname(__file__), '.env')
@@ -18,8 +23,11 @@ TWITTER_ID = os.environ.get("TWITTER_ID")
 TWITTER_PW = os.environ.get("TWITTER_PW")
 
 
-def tweet(entry, ticket_list):
+def tweet_with_jpg(entry, ticket_list):
     try:
+        # 画像ファイルを作成
+        make_jpg(entry, ticket_list)
+
         # オプション追加
         options = webdriver.ChromeOptions()
         options.add_argument("--no-sandbox")
@@ -44,19 +52,16 @@ def tweet(entry, ticket_list):
         elem = driver.find_element_by_class_name(
             'public-DraftStyleDefault-block')
 
-        opdt = entry.opdt
-        rcoursecd = entry.rcoursecd
-        rno = entry.rno
-        title = opdt + ' ' + convert_to_kanji(rcoursecd) + ' ' + rno + 'R'
+        # 画像ファイルをクリップボードにコピー
+        subprocess.run(
+            ["osascript",
+             "-e",
+             'set the clipboard to (read (POSIX file "./image/vote.jpg") as JPEG picture)'])
 
-        content = title + '\n'
-        if len(ticket_list) == 0:
-            content = content + '買い目なし'
-        else:
-            for ticket in ticket_list:
-                content = content + ticket.to_twitter_format() + '\n'
+        # 画像をペースト
+        elem.send_keys(Keys.SHIFT, Keys.INSERT)
 
-        elem.send_keys(content)
+        # ツイート
         send_tweet(elem)
         time.sleep(3)
 
@@ -66,45 +71,38 @@ def tweet(entry, ticket_list):
     driver.quit()
 
 
-def tweet_no_bet(entry):
-    try:
-        # オプション追加
-        options = webdriver.ChromeOptions()
-        options.add_argument("--no-sandbox")
-        options.add_argument('--headless')
-        driver = get_webdriver(options)
+def make_jpg(entry, ticket_list):
+    # base64化された画像データを用意
+    data = get_base64()
 
-        TWITTER_LOGIN_URL = "https://twitter.com/login"
-        driver.get(TWITTER_LOGIN_URL)
+    # 頭のいらない部分を取り除いた上で、バイト列にエンコード
+    image_data_bytes = re.sub(
+        '^data:image/.+;base64,',
+        '',
+        data).encode('utf-8')
 
-        time.sleep(1)
-        id = driver.find_element_by_name('session[username_or_email]')
-        id.send_keys(TWITTER_ID)
+    # バイト列をbase64としてデコード
+    image_data = base64.b64decode(image_data_bytes)
 
-        password = driver.find_element_by_name('session[password]')
-        password.send_keys(TWITTER_PW)
+    # ファイルとして開き、pillowのImageインスタンスにする
+    im = Image.open(io.BytesIO(image_data))
+    draw = ImageDraw.Draw(im)
+    fnt = ImageFont.truetype('./font/MEIRYO.TTC', 18)
 
-        # ログイン
-        password.send_keys(Keys.ENTER)
-        time.sleep(1)
+    # テキスト作成
+    opdt = entry.opdt
+    rcoursecd = entry.rcoursecd
+    rno = entry.rno
+    title = opdt + ' ' + convert_to_kanji(rcoursecd) + ' ' + rno + 'R'
 
-        # 入力
-        elem = driver.find_element_by_class_name(
-            'public-DraftStyleDefault-block')
-
-        # タイトル
-        title = entry.opdt + ' ' + entry.rcourse + ' ' + entry.rno + 'R'
-
-        content = title + '\n' + '買い目なし'
-        elem.send_keys(content)
-        time.sleep(1)
-        send_tweet(elem)
-        time.sleep(10)
-
-    except Exception as e:
-        print(e.args)
-
-    driver.quit()
+    content = title + '\n'
+    if len(ticket_list) == 0:
+        content = content + '買い目なし'
+    else:
+        for ticket in ticket_list:
+            content = content + ticket.to_twitter_format() + '\n'
+    draw.text((5, 0), content, font=fnt)
+    im.save("./image/vote.jpg")
 
 
 def send_tweet(elem):
@@ -150,3 +148,9 @@ def convert_to_kanji(txt):
         return '阪神'
     if 'KOKURA' in txt:
         return '小倉'
+
+
+def get_base64():
+    img_file = './image/template.jpg'
+    b64 = base64.encodestring(open(img_file, 'rb').read())
+    return b64.decode('utf8')
