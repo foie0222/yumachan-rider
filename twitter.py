@@ -57,7 +57,7 @@ def tweet_with_jpg(entry, ticket_list):
     except Exception as e:
         print(e.args)
 
-    driver.quit()
+    # driver.quit()
 
 
 def file_upload(driver):
@@ -99,15 +99,11 @@ def file_upload(driver):
         button.click()
 
 
+# Twitter投稿用のjpgファイルを作成
 def make_jpg(entry, ticket_list):
     # base64化された画像データを用意
     data = get_base64('./image/template.jpg')
-
-    # 頭のいらない部分を取り除いた上で、バイト列にエンコード
-    image_data_bytes = re.sub(
-        '^data:image/.+;base64,',
-        '',
-        data).encode('utf-8')
+    image_data_bytes = get_image_data_bytes(data)
 
     # バイト列をbase64としてデコード
     image_data = base64.b64decode(image_data_bytes)
@@ -115,22 +111,31 @@ def make_jpg(entry, ticket_list):
     # ファイルとして開き、pillowのImageインスタンスにする
     im = Image.open(io.BytesIO(image_data))
     draw = ImageDraw.Draw(im)
-    fnt = ImageFont.truetype('./font/MEIRYO.TTC', 18)
 
-    # テキスト作成
-    opdt = entry.opdt
-    rcoursecd = entry.rcoursecd
-    rno = entry.rno
-    title = opdt + ' ' + convert_to_kanji(rcoursecd) + ' ' + rno + 'R'
+    # フォント
+    bfnt = ImageFont.truetype('./font/MEIRYOB.TTC', 108)
+    nofnt = ImageFont.truetype('./font/MEIRYO.TTC', 64)
+    fnt = ImageFont.truetype('./font/MEIRYO.TTC', 84)
+    white = (255, 255, 255)
 
-    content = title + '\n'
+    # タイトル描画
+    title = get_title(entry)
+    draw.text((100, 100), title, fill=white, font=bfnt)
+
+    # 内容描画
     if len(ticket_list) == 0:
-        content = content + '買い目なし'
+        txt = 'Kidnap the cow instead of betting'
+        draw.text((660, 700), txt, fill=white, font=nofnt)
     else:
-        for ticket in ticket_list:
-            content = content + ticket.to_twitter_format() + '\n'
-    draw.text((5, 0), content, font=fnt)
+        for index, ticket in enumerate(ticket_list):
+            index += 1
+            txt = ticket.to_twitter_format()
+            draw.text((100, 200 + index * 100), txt, fill=white, font=fnt)
     im.save("./image/vote.jpg")
+
+
+def get_image_data_bytes(data):
+    return re.sub('^data:image/.+;base64,', '', data).encode('utf-8')
 
 
 def get_base64(img_file):
@@ -160,6 +165,14 @@ def get_webdriver(options):
             executable_path='./driver/chromedriver')
 
     return None
+
+
+# 画像に利用するタイトル
+def get_title(entry):
+    opdt = entry.opdt
+    rcoursecd = entry.rcoursecd
+    rno = entry.rno
+    return opdt + ' ' + convert_to_kanji(rcoursecd) + ' ' + rno + 'R'
 
 
 def convert_to_kanji(txt):
