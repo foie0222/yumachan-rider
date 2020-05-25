@@ -6,14 +6,12 @@ import subprocess
 import io
 import re
 import base64
-import win32clipboard
 from os.path import join, dirname
 from dotenv import load_dotenv
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
 from requests import request as rq
 from selenium.webdriver import Chrome, ChromeOptions
-from selenium.webdriver.common.keys import Keys
 from PIL import Image, ImageDraw, ImageFont
 
 # 環境変数の読み取り
@@ -49,24 +47,56 @@ def tweet_with_jpg(entry, ticket_list):
         password.send_keys(Keys.ENTER)
         time.sleep(1)
 
-        # 入力
-        elem = driver.find_element_by_class_name(
-            'public-DraftStyleDefault-block')
-
-        # 画像ファイルをクリップボードにコピー
-        copy_to_clipboard()
-
-        # 画像をペースト
-        elem.send_keys(Keys.SHIFT, Keys.INSERT)
+        # jpgファイルをアップロード
+        file_upload(driver)
 
         # ツイート
-        send_tweet(elem)
+        send_tweet(driver)
         time.sleep(3)
 
     except Exception as e:
         print(e.args)
 
     driver.quit()
+
+
+def file_upload(driver):
+    if os.name == 'posix':
+        # 入力
+        elem = driver.find_element_by_class_name(
+            'public-DraftStyleDefault-block')
+        subprocess.run(
+            ["osascript",
+             "-e",
+             'set the clipboard to (read (POSIX file "./image/vote.jpg") as JPEG picture)'])
+        # 画像をペースト
+        elem.send_keys(Keys.SHIFT, Keys.INSERT)
+
+    if os.name == 'nt':
+        elems = driver.find_elements_by_tag_name('div')
+        for elem in elems:
+            if elem.get_attribute('aria-label') == '画像や動画を追加':
+                elem.click()
+                break
+
+        # pywinautoによる制御
+        import pywinauto
+        findWindow = pywinauto.findwindows.find_windows(title='開く')[0]
+        dialog = pywinauto.timings.wait_until_passes(5, 1, findWindow)
+        pwa_app = pywinauto.Application()
+        pwa_app.connect(handle=dialog)
+        window = pwa_app['開く']
+        window.wait('ready')
+
+        # ファイル入力（Alt+N）
+        pywinauto.keyboard.send_keys("%N")
+        edit = window.Edit4
+        edit.set_focus()
+        edit.set_text(r'C:\develop\git\yumachan-rider\image\vote.jpg')
+
+        # ダイアログの「開く」ボタンをクリック
+        button = window['開く(&O):']
+        button.click()
 
 
 def make_jpg(entry, ticket_list):
@@ -103,27 +133,14 @@ def make_jpg(entry, ticket_list):
     im.save("./image/vote.jpg")
 
 
-def copy_to_clipboard():
-    data = get_base64('./image/vote.jpg')
-    if os.name == 'nt':
-        send_to_clipboard(win32clipboard.CF_DIB, data)
-
-    if os.name == 'posix':
-        subprocess.run(
-            ["osascript",
-             "-e",
-             'set the clipboard to (read (POSIX file "./image/vote.jpg") as JPEG picture)'])
+def get_base64(img_file):
+    b64 = base64.encodestring(open(img_file, 'rb').read())
+    return b64.decode('utf8')
 
 
-def send_to_clipboard(clip_type, data):
-    # クリップボードをクリアして、データをセットする
-    win32clipboard.OpenClipboard()
-    win32clipboard.EmptyClipboard()
-    win32clipboard.SetClipboardData(clip_type, data)
-    win32clipboard.CloseClipboard()
-
-
-def send_tweet(elem):
+def send_tweet(driver):
+    elem = driver.find_element_by_class_name(
+        'public-DraftStyleDefault-block')
     if os.name == 'nt':
         elem.send_keys(Keys.CONTROL, Keys.ENTER)
 
@@ -166,8 +183,3 @@ def convert_to_kanji(txt):
         return '阪神'
     if 'KOKURA' in txt:
         return '小倉'
-
-
-def get_base64(img_file):
-    b64 = base64.encodestring(open(img_file, 'rb').read())
-    return b64.decode('utf8')
