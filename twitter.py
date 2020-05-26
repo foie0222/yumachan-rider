@@ -30,7 +30,7 @@ def tweet_with_jpg(entry, ticket_list):
         # オプション追加
         options = webdriver.ChromeOptions()
         options.add_argument("--no-sandbox")
-        options.add_argument('--headless')
+        # options.add_argument('--headless')
         driver = get_webdriver(options)
 
         TWITTER_LOGIN_URL = "https://twitter.com/login"
@@ -52,12 +52,12 @@ def tweet_with_jpg(entry, ticket_list):
 
         # ツイート
         send_tweet(driver)
-        time.sleep(3)
+        time.sleep(5)
 
     except Exception as e:
         print(e.args)
 
-    # driver.quit()
+    driver.quit()
 
 
 def file_upload(driver):
@@ -78,26 +78,27 @@ def file_upload(driver):
             if elem.get_attribute('aria-label') == '画像や動画を追加':
                 elem.click()
                 break
+        
+        time.sleep(3)
 
         # pywinautoによる制御
         import pywinauto
-        findWindow = pywinauto.findwindows.find_windows(title='開く')[0]
-        dialog = pywinauto.timings.wait_until_passes(5, 1, findWindow)
         pwa_app = pywinauto.Application()
-        pwa_app.connect(handle=dialog)
+        pwa_app.connect(path = r'C:\Program Files (x86)\Google\Chrome\Application\chrome.exe')
         window = pwa_app['開く']
-        window.wait('ready')
+        window.wait('ready', timeout=20, retry_interval=1)
 
         # ファイル入力（Alt+N）
         pywinauto.keyboard.send_keys("%N")
         edit = window.Edit4
         edit.set_focus()
         edit.set_text(r'C:\develop\git\yumachan-rider\image\vote.jpg')
+        time.sleep(1)
 
         # ダイアログの「開く」ボタンをクリック
         button = window['開く(&O):']
         button.click()
-
+        time.sleep(1)
 
 # Twitter投稿用のjpgファイルを作成
 def make_jpg(entry, ticket_list):

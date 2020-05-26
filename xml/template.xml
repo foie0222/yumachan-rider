@@ -10,7 +10,7 @@
   <Principals>
     <Principal id="Author">
       <UserId>S-1-5-21-2960307845-2076881844-2859966175-1001</UserId>
-      <LogonType>S4U</LogonType>
+      <LogonType>InteractiveToken</LogonType>
       <RunLevel>LeastPrivilege</RunLevel>
     </Principal>
   </Principals>
