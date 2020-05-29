@@ -103,6 +103,8 @@ def file_upload(driver):
                 button.click()
                 time.sleep(1)
 
+                break
+
             except Exception as e:
                 print(e.args)
 
