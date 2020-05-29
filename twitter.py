@@ -78,27 +78,34 @@ def file_upload(driver):
             if elem.get_attribute('aria-label') == '画像や動画を追加':
                 elem.click()
                 break
-        
+
         time.sleep(3)
 
         # pywinautoによる制御
         import pywinauto
-        pwa_app = pywinauto.Application()
-        pwa_app.connect(path = r'C:\Program Files (x86)\Google\Chrome\Application\chrome.exe')
-        window = pwa_app['開く']
-        window.wait('ready', timeout=20, retry_interval=1)
+        for i in range(3):
+            try:
+                pwa_app = pywinauto.Application()
+                pwa_app.connect(
+                    path=r'C:\Program Files (x86)\Google\Chrome\Application\chrome.exe')
+                window = pwa_app['開く']
+                window.wait('ready', timeout=20, retry_interval=1)
 
-        # ファイル入力（Alt+N）
-        pywinauto.keyboard.send_keys("%N")
-        edit = window.Edit4
-        edit.set_focus()
-        edit.set_text(r'C:\develop\git\yumachan-rider\image\vote.jpg')
-        time.sleep(1)
+                # ファイル入力（Alt+N）
+                pywinauto.keyboard.send_keys("%N")
+                edit = window.Edit4
+                edit.set_focus()
+                edit.set_text(r'C:\develop\git\yumachan-rider\image\vote.jpg')
+                time.sleep(1)
 
-        # ダイアログの「開く」ボタンをクリック
-        button = window['開く(&O):']
-        button.click()
-        time.sleep(1)
+                # ダイアログの「開く」ボタンをクリック
+                button = window['開く(&O):']
+                button.click()
+                time.sleep(1)
+
+            except Exception as e:
+                print(e.args)
+
 
 # Twitter投稿用のjpgファイルを作成
 def make_jpg(entry, ticket_list):
