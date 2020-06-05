@@ -13,6 +13,7 @@ from selenium.webdriver.common.keys import Keys
 from requests import request as rq
 from selenium.webdriver import Chrome, ChromeOptions
 from PIL import Image, ImageDraw, ImageFont
+import math as m
 
 # 環境変数の読み取り
 dotenv_path = join(dirname(__file__), '.env')
@@ -125,7 +126,7 @@ def make_jpg(entry, ticket_list):
     # フォント
     bfnt = ImageFont.truetype('./font/MEIRYOB.TTC', 108)
     nofnt = ImageFont.truetype('./font/MEIRYO.TTC', 64)
-    fnt = ImageFont.truetype('./font/MEIRYO.TTC', 84)
+    fnt = ImageFont.truetype('./font/MEIRYO.TTC', 72)
     white = (255, 255, 255)
 
     # タイトル描画
@@ -140,7 +141,15 @@ def make_jpg(entry, ticket_list):
         for index, ticket in enumerate(ticket_list):
             index += 1
             txt = ticket.to_twitter_format()
-            draw.text((100, 200 + index * 100), txt, fill=white, font=fnt)
+
+            q = index // 11
+            mod = index % 11
+
+            draw.text((100 + (q if mod != 0 else q - 1) * 820,
+                       200 + (index - q * 11 if mod != 0 else 11) * 100),
+                      txt,
+                      fill=white, font=fnt)
+
     im.save("./image/vote.jpg")
 
 
