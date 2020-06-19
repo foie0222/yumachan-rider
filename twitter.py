@@ -31,8 +31,14 @@ def tweet_with_jpg(entry, ticket_list):
         # オプション追加
         options = webdriver.ChromeOptions()
         options.add_argument("--no-sandbox")
-        # options.add_argument('--headless')
+        options.add_argument('--headless')
         driver = get_webdriver(options)
+
+        if os.name == 'nt':
+            # 買い目画像をクリップボードに貼り付け
+            driver.get('file:///C:/develop/git/yumachan-rider/image/vote.jpg')
+            elem = driver.find_element_by_tag_name('body')
+            elem.send_keys(Keys.CONTROL, 'c')
 
         TWITTER_LOGIN_URL = "https://twitter.com/login"
         driver.get(TWITTER_LOGIN_URL)
@@ -74,40 +80,9 @@ def file_upload(driver):
         elem.send_keys(Keys.SHIFT, Keys.INSERT)
 
     if os.name == 'nt':
-        elems = driver.find_elements_by_tag_name('div')
-        for elem in elems:
-            if elem.get_attribute('aria-label') == '画像や動画を追加':
-                elem.click()
-                break
-
-        time.sleep(3)
-
-        # pywinautoによる制御
-        import pywinauto
-        for i in range(3):
-            try:
-                pwa_app = pywinauto.Application()
-                pwa_app.connect(
-                    path=r'C:\Program Files (x86)\Google\Chrome\Application\chrome.exe')
-                window = pwa_app['開く']
-                window.wait('ready', timeout=20, retry_interval=1)
-
-                # ファイル入力（Alt+N）
-                pywinauto.keyboard.send_keys("%N")
-                edit = window.Edit4
-                edit.set_focus()
-                edit.set_text(r'C:\develop\git\yumachan-rider\image\vote.jpg')
-                time.sleep(1)
-
-                # ダイアログの「開く」ボタンをクリック
-                button = window['開く(&O):']
-                button.click()
-                time.sleep(1)
-
-                break
-
-            except Exception as e:
-                print(e.args)
+        elem = driver.find_element_by_class_name(
+            'public-DraftStyleDefault-block')
+        elem.send_keys(Keys.CONTROL,"v")
 
 
 # Twitter投稿用のjpgファイルを作成
