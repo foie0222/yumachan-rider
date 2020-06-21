@@ -64,6 +64,7 @@ def make_ticket(entry, realtime_odds):
 
     # 単勝購入
     realtime_tan_odds_list = realtime_odds.tan_odds_list
+    tan_ticket_list = []
     for horse in entry.horse_list:
 
         odds = list(filter(lambda real_odds: True if real_odds.umano ==
@@ -87,10 +88,14 @@ def make_ticket(entry, realtime_odds):
             str(bet),
             expected_value,
             odds.tanodds)
-        ticket_list.append(ticket)
+        tan_ticket_list.append(ticket)
+
+    sorted_tan_ticket_list = sorted(tan_ticket_list, key=lambda t: t.number)
+    ticket_list.extend(sorted_tan_ticket_list)
 
     # 複勝購入
     fuku_min_odds_list = realtime_odds.fuku_min_odds_list
+    fuku_ticket_list = []
     for horse in entry.horse_list:
 
         odds = list(filter(lambda real_odds: True if real_odds.umano ==
@@ -116,10 +121,14 @@ def make_ticket(entry, realtime_odds):
             str(bet),
             expected_value,
             odds.fuku_min_odds)
-        ticket_list.append(ticket_fuku)
+        fuku_ticket_list.append(ticket_fuku)
+
+    sorted_fuku_ticket_list = sorted(fuku_ticket_list, key=lambda t: t.number)
+    ticket_list.extend(sorted_fuku_ticket_list)
 
     # ワイドを購入
     realtime_wide_odds_list = realtime_odds.wide_odds_list
+    wide_ticket_list = []
     for i, horse1 in enumerate(entry.horse_list):
         for horse2 in entry.horse_list[i + 1:]:
             pair_num = make_wide(horse1.umano, horse2.umano)
@@ -155,10 +164,14 @@ def make_ticket(entry, realtime_odds):
                 str(bet),
                 expected_value,
                 odds.wideodds)
-            ticket_list.append(ticket_wide)
+            wide_ticket_list.append(ticket_wide)
+
+    sorted_wide_ticket_list = sorted(wide_ticket_list, key=lambda t: t.number)
+    ticket_list.extend(sorted_wide_ticket_list)
 
     # 3連複を購入
     realtime_trio_odds_list = realtime_odds.trio_odds_list
+    trio_ticket_list = []
     for index1, horse1 in enumerate(entry.horse_list):
         for index2, horse2 in enumerate(entry.horse_list[index1 + 1:]):
             for horse3 in entry.horse_list[index1 + index2 + 2:]:
@@ -201,7 +214,10 @@ def make_ticket(entry, realtime_odds):
                     str(bet),
                     expected_value,
                     odds.trio_odds)
-                ticket_list.append(ticket_trio)
+                trio_ticket_list.append(ticket_trio)
+
+    sorted_trio_ticket_list = sorted(trio_ticket_list, key=lambda t: t.number)
+    ticket_list.extend(sorted_trio_ticket_list)
 
     return ticket_list
 
