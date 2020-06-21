@@ -60,7 +60,7 @@ class Ticket:
 
 
 def make_ticket(entry, realtime_odds):
-    ticlet_list = []
+    ticket_list = []
 
     # 単勝購入
     realtime_tan_odds_list = realtime_odds.tan_odds_list
@@ -87,7 +87,7 @@ def make_ticket(entry, realtime_odds):
             str(bet),
             expected_value,
             odds.tanodds)
-        ticlet_list.append(ticket)
+        ticket_list.append(ticket)
 
     # 複勝購入
     fuku_min_odds_list = realtime_odds.fuku_min_odds_list
@@ -116,11 +116,10 @@ def make_ticket(entry, realtime_odds):
             str(bet),
             expected_value,
             odds.fuku_min_odds)
-        ticlet_list.append(ticket_fuku)
-
-    realtime_wide_odds_list = realtime_odds.wide_odds_list
+        ticket_list.append(ticket_fuku)
 
     # ワイドを購入
+    realtime_wide_odds_list = realtime_odds.wide_odds_list
     for i, horse1 in enumerate(entry.horse_list):
         for horse2 in entry.horse_list[i + 1:]:
             pair_num = make_wide(horse1.umano, horse2.umano)
@@ -156,9 +155,55 @@ def make_ticket(entry, realtime_odds):
                 str(bet),
                 expected_value,
                 odds.wideodds)
-            ticlet_list.append(ticket_wide)
+            ticket_list.append(ticket_wide)
 
-    return ticlet_list
+    # 3連複を購入
+    realtime_trio_odds_list = realtime_odds.trio_odds_list
+    for index1, horse1 in enumerate(entry.horse_list):
+        for index2, horse2 in enumerate(entry.horse_list[index1 + 1:]):
+            for horse3 in entry.horse_list[index1 + index2 + 2:]:
+                pair_num = make_trio(horse1.umano, horse2.umano, horse3.umano)
+
+                odds = list(
+                    filter(
+                        lambda real_odds: True if pair_num == real_odds.pair_umano else False,
+                        realtime_trio_odds_list))[0]
+
+                horse1_in_trio_probability = get_wide_probability(
+                    horse1.probability)
+                horse2_in_trio_probability = get_wide_probability(
+                    horse2.probability)
+                horse3_in_trio_probability = get_wide_probability(
+                    horse3.probability)
+
+                bet = 0
+                expected_trio_final_odds = odds.trio_odds * 0.9
+                expected_value = expected_trio_final_odds * horse1_in_trio_probability * \
+                    horse2_in_trio_probability * horse3_in_trio_probability / 10000
+                if expected_value >= 1000 and expected_trio_final_odds <= 2000 and expected_trio_final_odds >= 100:
+                    bet = lowest_bet_for(
+                        expected_value * 10,
+                        expected_trio_final_odds)
+                else:
+                    continue
+
+                ticket_trio = Ticket(
+                    entry.opdt,
+                    entry.rcoursecd,
+                    entry.rno,
+                    'TRIO',
+                    'NORMAL',
+                    '',
+                    make_trio(
+                        horse1.umano,
+                        horse2.umano,
+                        horse3.umano),
+                    str(bet),
+                    expected_value,
+                    odds.trio_odds)
+                ticket_list.append(ticket_trio)
+
+    return ticket_list
 
 
 def lowest_bet_for(pay, odds):
@@ -174,6 +219,14 @@ def make_wide(umano1, umano2):
     if uma1 < uma2:
         return umano1 + '-' + umano2
     return umano2 + '-' + umano1
+
+
+def make_trio(umano1, umano2, umano3):
+    x = [int(umano1), int(umano2), int(umano3)]
+    sorted_x = sorted(x)
+    res = str(sorted_x[0]).zfill(2) + '-' + \
+        str(sorted_x[1]).zfill(2) + '-' + str(sorted_x[2]).zfill(2)
+    return res
 
 
 # 単勝率から複勝率を算出
@@ -202,3 +255,5 @@ def convert_to_kanji(txt):
         return '複勝'
     if 'WIDE' in txt:
         return 'ワイド'
+    if 'TRIO' in txt:
+        return '3連複'

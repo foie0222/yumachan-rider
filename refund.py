@@ -128,6 +128,32 @@ def get_wide_refund_list(opdt, rcoursecd, rno):
     return wide_refund_list
 
 
+# 3連複的中馬番と払戻金のリストを作成する
+def get_trio_refund_list(opdt, rcoursecd, rno):
+    rcoursecd = convert_rcoursecd_num(rcoursecd)
+    refund_df = con.get_data(
+        """
+        select
+            TRIONO1,
+            TRIORFD1,
+            TRIONO2,
+            TRIORFD2,
+            TRIONO3,
+            TRIORFD3
+        from
+            RFD
+        where
+            OPDT = {}
+        and
+            rcoursecd = {}
+        and
+            rno = {}
+        """.format(opdt, rcoursecd, rno)
+    )
+    trio_refund_list = make_trio_refund_list(refund_df)
+    return trio_refund_list
+
+
 # データフレームからワイドRefundリストを作成する
 def make_wide_refund_list(refund_df):
     wide_refund_list = []
@@ -140,5 +166,21 @@ def make_wide_refund_list(refund_df):
     return wide_refund_list
 
 
+# データフレームからワイドRefundリストを作成する
+def make_trio_refund_list(refund_df):
+    trio_refund_list = []
+    for NO in ['1', '2', '3']:
+        if refund_df['TRIONO' + NO][0] is None:  # 値がなかったら空
+            continue
+        trio_refund_list.append(Refund(add_hyphen_hyphen(
+            refund_df['TRIONO' + NO][0]), refund_df['TRIORFD' + NO][0]))
+
+    return trio_refund_list
+
+
 def add_hyphen(wideno):
     return wideno[:2] + '-' + wideno[2:]
+
+
+def add_hyphen_hyphen(triono):
+    return triono[:2] + '-' + triono[2:4] + '-' + triono[4:6]

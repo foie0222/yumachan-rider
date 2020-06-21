@@ -49,6 +49,9 @@ def get_verification_list(ticket_list):
     # ワイドの払い戻し結果を取得
     wide_refund_list = get_wide_refund_list(opdt, rcoursecd, rno)
 
+    # 3連複の払い戻し結果を取得
+    trio_refund_list = get_trio_refund_list(opdt, rcoursecd, rno)
+
     for ticket in ticket_list:
         if ticket.denomination == 'TANSYO':
             verification_list.append(
@@ -64,6 +67,11 @@ def get_verification_list(ticket_list):
             verification_list.append(
                 get_verification(
                     ticket, wide_refund_list))
+
+        if ticket.denomination == 'TRIO':
+            verification_list.append(
+                get_verification(
+                    ticket, trio_refund_list))
 
     return verification_list
 
