@@ -191,7 +191,7 @@ def make_ticket(entry, realtime_odds):
                     entry.opdt,
                     entry.rcoursecd,
                     entry.rno,
-                    'TRIO',
+                    'SANRENPUKU',
                     'NORMAL',
                     '',
                     make_trio(
@@ -255,5 +255,5 @@ def convert_to_kanji(txt):
         return '複勝'
     if 'WIDE' in txt:
         return 'ワイド'
-    if 'TRIO' in txt:
+    if 'SANRENPUKU' in txt:
         return '3連複'
