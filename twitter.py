@@ -25,7 +25,10 @@ TWITTER_PW = os.environ.get("TWITTER_PW")
 
 def tweet_with_jpg(entry, ticket_list):
     # ツイートする画像の枚数
-    jpg_nums = m.ceil(len(ticket_list) / 33)  # line 1,2,3
+    if len(ticket_list) == 0:
+        jpg_nums = 1
+    else:
+        jpg_nums = m.ceil(len(ticket_list) / 33)  # line 1,2,3
 
     # 画像ファイルを作成
     for jpg_num in range(jpg_nums):
