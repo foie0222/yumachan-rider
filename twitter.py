@@ -24,21 +24,19 @@ TWITTER_PW = os.environ.get("TWITTER_PW")
 
 
 def tweet_with_jpg(entry, ticket_list):
-    try:
-        # 画像ファイルを作成
-        make_jpg(entry, ticket_list)
+    # ツイートする画像の枚数
+    jpg_nums = m.ceil(len(ticket_list) / 33)  # line 1,2,3
 
+    # 画像ファイルを作成
+    for jpg_num in range(jpg_nums):
+        make_jpg(entry, ticket_list, jpg_num)
+
+    try:
         # オプション追加
         options = webdriver.ChromeOptions()
         options.add_argument("--no-sandbox")
         options.add_argument('--headless')
         driver = get_webdriver(options)
-
-        if os.name == 'nt':
-            # 買い目画像をクリップボードに貼り付け
-            driver.get('file:///C:/develop/git/yumachan-rider/image/vote.jpg')
-            elem = driver.find_element_by_tag_name('body')
-            elem.send_keys(Keys.CONTROL, 'c')
 
         TWITTER_LOGIN_URL = "https://twitter.com/login"
         driver.get(TWITTER_LOGIN_URL)
@@ -54,12 +52,13 @@ def tweet_with_jpg(entry, ticket_list):
         password.send_keys(Keys.ENTER)
         time.sleep(1)
 
-        # jpgファイルをアップロード
-        file_upload(driver)
+        # jpgファイルを枚数分アップロード
+        for jpg_num in range(jpg_nums):
+            file_upload(driver, jpg_num)
 
         # ツイート
         send_tweet(driver)
-        time.sleep(5)
+        time.sleep(10)
 
     except Exception as e:
         print(e.args)
@@ -67,7 +66,7 @@ def tweet_with_jpg(entry, ticket_list):
     driver.quit()
 
 
-def file_upload(driver):
+def file_upload(driver, jpg_num):
     if os.name == 'posix':
         # 入力
         elem = driver.find_element_by_class_name(
@@ -75,18 +74,31 @@ def file_upload(driver):
         subprocess.run(
             ["osascript",
              "-e",
-             'set the clipboard to (read (POSIX file "./image/vote.jpg") as JPEG picture)'])
+             'set the clipboard to (read (POSIX file "./image/vote_' +
+             str(jpg_num) +
+             '.jpg") as JPEG picture)'])
         # 画像をペースト
         elem.send_keys(Keys.SHIFT, Keys.INSERT)
 
     if os.name == 'nt':
+        driver.execute_script("window.open()")  # 新規タブ
+        driver.switch_to.window(driver.window_handles[1])  # スイッチ
+        driver.get(
+            'file:///C:/develop/git/yumachan-rider/image/vote_' +
+            str(jpg_num) +
+            '.jpg')
+        elem = driver.find_element_by_tag_name('body')
+        elem.send_keys(Keys.CONTROL, 'c')
+        driver.close()
+        driver.switch_to.window(driver.window_handles[0])
+
         elem = driver.find_element_by_class_name(
             'public-DraftStyleDefault-block')
-        elem.send_keys(Keys.CONTROL,"v")
+        elem.send_keys(Keys.CONTROL, "v")
 
 
 # Twitter投稿用のjpgファイルを作成
-def make_jpg(entry, ticket_list):
+def make_jpg(entry, ticket_list, jpg_num):
     # base64化された画像データを用意
     data = get_base64('./image/template.jpg')
     image_data_bytes = get_image_data_bytes(data)
@@ -113,7 +125,8 @@ def make_jpg(entry, ticket_list):
         txt = 'Kidnap the cow instead of betting'
         draw.text((660, 700), txt, fill=white, font=nofnt)
     else:
-        for index, ticket in enumerate(ticket_list):
+        for index, ticket in enumerate(
+                ticket_list[33 * jpg_num:33 * (jpg_num + 1)]):
             index += 1
             txt = ticket.to_twitter_format()
 
@@ -125,7 +138,7 @@ def make_jpg(entry, ticket_list):
                       txt,
                       fill=white, font=fnt)
 
-    im.save("./image/vote.jpg")
+    im.save('./image/vote_' + str(jpg_num) + '.jpg')
 
 
 def get_image_data_bytes(data):
