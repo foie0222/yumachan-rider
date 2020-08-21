@@ -38,11 +38,11 @@ def main():
     # ipatgoで投票
     vote(timestamp)
 
-    # 購入馬券リストをGSSに書き出す
-    write_gss(ticket_list, timestamp, True)
-
     # tweet
     tweet_with_jpg(entry, ticket_list)
+
+    # 購入馬券リストをGSSに書き出す
+    write_gss(ticket_list, timestamp, True)
 
 
 def verify():
