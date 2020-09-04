@@ -62,6 +62,15 @@ def get_realtime_odds(opdt, rcoursecd, rno):
         get_realtime_trio_odds(opdt, rcoursecd, rno))
 
 
+# 検証用に直前オッズを取得
+def get_just_before_odds(opdt, rcoursecd, rno):
+    return Odds(
+        get_just_before_tan_odds(opdt, rcoursecd, rno),
+        get_just_before_fuku_odds(opdt, rcoursecd, rno),
+        get_realtime_wide_odds(opdt, rcoursecd, rno),  # ワイドは直前オッズを取得できない
+        get_realtime_trio_odds(opdt, rcoursecd, rno))  # 3連複は直前オッズを取得できない
+
+
 # リアルタイムオッズを取得
 def get_realtime_tan_odds(opdt, rcoursecd, rno):
     rcourse = convert_rcoursecd_num(rcoursecd)
@@ -219,7 +228,7 @@ def get_realtime_wide_odds(opdt, rcoursecd, rno):
 
 def convert_wide_odds_list(realtime_wide_odds):
     wide_odds_list = []
-    for column in realtime_wide_odds.iteritems():
+    for column, row in realtime_wide_odds.iteritems():
         wide_odds_row = str(realtime_wide_odds[column][0])
         wide_odds_value_list = [wide_odds_row[i: i + 5]
                                 for i in range(0, len(wide_odds_row), 5)]  # 5桁ずつ分割
@@ -393,7 +402,7 @@ def get_realtime_trio_odds(opdt, rcoursecd, rno):
 
 def convert_trio_odds_list(realtime_trio_odds):
     trio_odds_list = []
-    for column in realtime_trio_odds.iteritems():
+    for column, row in realtime_trio_odds.iteritems():
         trio_odds_row = str(realtime_trio_odds[column][0])
         trio_odds_value_list = [trio_odds_row[i: i + 6]
                                 for i in range(0, len(trio_odds_row), 6)]  # 6桁ずつ分割
