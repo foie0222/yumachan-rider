@@ -23,17 +23,7 @@ TWITTER_ID = os.environ.get("TWITTER_ID")
 TWITTER_PW = os.environ.get("TWITTER_PW")
 
 
-def tweet_with_jpg(entry, ticket_list):
-    # ツイートする画像の枚数
-    if len(ticket_list) == 0:
-        jpg_nums = 1
-    else:
-        jpg_nums = m.ceil(len(ticket_list) / 33)  # line 1,2,3
-
-    # 画像ファイルを作成
-    for jpg_num in range(jpg_nums):
-        make_jpg(entry, ticket_list, jpg_num)
-
+def tweet_with_jpg(entry, jpg_nums):
     try:
         # オプション追加
         options = webdriver.ChromeOptions()
@@ -100,58 +90,6 @@ def file_upload(driver, jpg_num):
         elem.send_keys(Keys.CONTROL, "v")
 
 
-# Twitter投稿用のjpgファイルを作成
-def make_jpg(entry, ticket_list, jpg_num):
-    # base64化された画像データを用意
-    data = get_base64('./image/template.jpg')
-    image_data_bytes = get_image_data_bytes(data)
-
-    # バイト列をbase64としてデコード
-    image_data = base64.b64decode(image_data_bytes)
-
-    # ファイルとして開き、pillowのImageインスタンスにする
-    im = Image.open(io.BytesIO(image_data))
-    draw = ImageDraw.Draw(im)
-
-    # フォント
-    bfnt = ImageFont.truetype('./font/MEIRYOB.TTC', 108)
-    nofnt = ImageFont.truetype('./font/MEIRYO.TTC', 64)
-    fnt = ImageFont.truetype('./font/MEIRYO.TTC', 72)
-    white = (255, 255, 255)
-
-    # タイトル描画
-    title = get_title(entry)
-    draw.text((100, 100), title, fill=white, font=bfnt)
-
-    # 内容描画
-    if len(ticket_list) == 0:
-        txt = 'Kidnap the cow instead of betting'
-        draw.text((660, 700), txt, fill=white, font=nofnt)
-    else:
-        for index, ticket in enumerate(
-                ticket_list[33 * jpg_num:33 * (jpg_num + 1)]):
-            index += 1
-            txt = ticket.to_twitter_format()
-
-            q = index // 11
-            mod = index % 11
-
-            draw.text((100 + (q if mod != 0 else q - 1) * 820,
-                       200 + (index - q * 11 if mod != 0 else 11) * 100),
-                      txt,
-                      fill=white, font=fnt)
-
-    im.save('./image/vote_' + str(jpg_num) + '.jpg')
-
-
-def get_image_data_bytes(data):
-    return re.sub('^data:image/.+;base64,', '', data).encode('utf-8')
-
-
-def get_base64(img_file):
-    b64 = base64.encodestring(open(img_file, 'rb').read())
-    return b64.decode('utf8')
-
 
 def send_tweet(driver):
     elem = driver.find_element_by_class_name(
@@ -175,14 +113,6 @@ def get_webdriver(options):
             executable_path='./driver/chromedriver')
 
     return None
-
-
-# 画像に利用するタイトル
-def get_title(entry):
-    opdt = entry.opdt
-    rcoursecd = entry.rcoursecd
-    rno = entry.rno
-    return opdt + ' ' + convert_to_kanji(rcoursecd) + ' ' + rno + 'R'
 
 
 def convert_to_kanji(txt):
