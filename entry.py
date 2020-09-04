@@ -1,4 +1,5 @@
 from horse import get_horse_list
+import re
 
 
 class Entry:
@@ -12,7 +13,7 @@ class Entry:
 
 def get_entry(header_txt, body_txt):
     opdt = get_opdt(header_txt)
-    rcoursecd = get_rcoursecd(header_txt)
+    rcoursecd = get_rcoursecd(re.findall('.*R', header_txt)[0])
     rno = get_rno(header_txt)
     rname = get_rname(header_txt)
     horser_list = get_horse_list(body_txt)
