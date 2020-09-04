@@ -62,6 +62,7 @@ def get_realtime_odds(opdt, rcoursecd, rno):
         get_realtime_trio_odds(opdt, rcoursecd, rno))
 
 
+# リアルタイムオッズを取得
 def get_realtime_tan_odds(opdt, rcoursecd, rno):
     rcourse = convert_rcoursecd_num(rcoursecd)
     realtime_tan_odds = con.get_data(
@@ -81,6 +82,31 @@ def get_realtime_tan_odds(opdt, rcoursecd, rno):
     return convert_tan_odds_list(realtime_tan_odds)
 
 
+# 検証用に直前オッズを取得
+def get_just_before_tan_odds(opdt, rcoursecd, rno):
+    rcourse = convert_rcoursecd_num(rcoursecd)
+    just_before_tan_odds = con.get_data(
+        """
+        select
+            TANODDS
+        from
+            RODDSTFWK
+        where
+            OPDT = '{}'
+        and
+            rcoursecd = '{}'
+        and
+            rno = '{}'
+        and
+            RLSDTTM < '{}' ||  (select POSTTM from RACEMST where OPDT = '{}' and rcoursecd = '{}' and rno = '{}')
+        order by
+            RLSDTTM desc
+        rows 1
+        """.format(opdt, rcourse, rno, opdt[4:8], opdt, rcourse, rno)
+    )
+    return convert_tan_odds_list(just_before_tan_odds)
+
+
 def convert_tan_odds_list(realtime_tan_odds):
     tan_odds_row = str(realtime_tan_odds['TANODDS'][0])
     tan_odds_value_list = [tan_odds_row[i: i + 4]
@@ -96,6 +122,7 @@ def convert_tan_odds_list(realtime_tan_odds):
     return tan_odds_list
 
 
+# リアルタイムオッズを取得
 def get_realtime_fuku_min_odds(opdt, rcoursecd, rno):
     rcourse = convert_rcoursecd_num(rcoursecd)
     realtime_fuku_min_odds = con.get_data(
@@ -113,6 +140,31 @@ def get_realtime_fuku_min_odds(opdt, rcoursecd, rno):
         """.format(opdt, rcourse, rno)
     )
     return convert_fuku_min_odds_list(realtime_fuku_min_odds)
+
+
+# 検証用に直前オッズを取得
+def get_just_before_fuku_odds(opdt, rcoursecd, rno):
+    rcourse = convert_rcoursecd_num(rcoursecd)
+    just_before_fuku_odds = con.get_data(
+        """
+        select
+            FUKMINODDS
+        from
+            RODDSTFWK
+        where
+            OPDT = '{}'
+        and
+            rcoursecd = '{}'
+        and
+            rno = '{}'
+        and
+            RLSDTTM < '{}' ||  (select POSTTM from RACEMST where OPDT = '{}' and rcoursecd = '{}' and rno = '{}')
+        order by
+            RLSDTTM desc
+        rows 1
+        """.format(opdt, rcourse, rno, opdt[4:8], opdt, rcourse, rno)
+    )
+    return convert_fuku_min_odds_list(just_before_fuku_odds)
 
 
 def convert_fuku_min_odds_list(realtime_fuku_min_odds):
@@ -167,7 +219,7 @@ def get_realtime_wide_odds(opdt, rcoursecd, rno):
 
 def convert_wide_odds_list(realtime_wide_odds):
     wide_odds_list = []
-    for column, row in realtime_wide_odds.iteritems():
+    for column in realtime_wide_odds.iteritems():
         wide_odds_row = str(realtime_wide_odds[column][0])
         wide_odds_value_list = [wide_odds_row[i: i + 5]
                                 for i in range(0, len(wide_odds_row), 5)]  # 5桁ずつ分割
@@ -341,7 +393,7 @@ def get_realtime_trio_odds(opdt, rcoursecd, rno):
 
 def convert_trio_odds_list(realtime_trio_odds):
     trio_odds_list = []
-    for column, row in realtime_trio_odds.iteritems():
+    for column in realtime_trio_odds.iteritems():
         trio_odds_row = str(realtime_trio_odds[column][0])
         trio_odds_value_list = [trio_odds_row[i: i + 6]
                                 for i in range(0, len(trio_odds_row), 6)]  # 6桁ずつ分割
