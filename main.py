@@ -1,8 +1,8 @@
 from gss import write_gss
-from odds import get_realtime_odds
+from odds import get_realtime_odds, get_just_before_odds
 from scraper import Scraper, get_date, get_url, isLocal
 from entry import get_entry
-from ticket import make_ticket
+from ticket import make_ticket, make_verification_ticket
 from writer import make_csv, write_races_csv, write_result_to_csv
 from verification import get_verification_list
 from ipatgo import vote
@@ -54,7 +54,7 @@ def main():
 
 
 def verify():
-    date_list = ['races/202005*.txt']
+    date_list = ['races/20200307.txt']
     for date in date_list:
         file_list = sorted(glob.glob(date), reverse=False)
         for target_file in file_list:
@@ -75,12 +75,13 @@ def verify():
                     # 取得した結果を変換
                     entry = get_entry(header_txt, body_txt)
 
-                    # リアルタイムオッズを取得
-                    realtime_odds = get_realtime_odds(
+                    # 直前オッズを取得
+                    just_before_odds = get_just_before_odds(
                         entry.opdt, entry.rcoursecd, entry.rno)
 
-                    # # 購入馬券リストを作る
-                    ticket_list = make_ticket(entry, realtime_odds)
+                    # 購入馬券リストを作る
+                    ticket_list = make_verification_ticket(
+                        entry, just_before_odds)
 
                     # 検証用のデータを作成
                     verification_list = get_verification_list(ticket_list)

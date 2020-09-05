@@ -9,9 +9,7 @@ class Verification:
 
     def to_string(self):
         return 'Verification=[{}, is_hit={}, refund={}]'.format(
-            self.ticket.to_verification_format(),
-            self.is_hit,
-            self.refund)
+            self.ticket.to_verification_format(), self.is_hit, self.refund)
 
     def to_gss_format(self):
         return [self.ticket.opdt,
@@ -20,6 +18,7 @@ class Verification:
                 self.ticket.denomination,
                 self.ticket.method,
                 self.ticket.number,
+                self.ticket.odds,
                 int(self.ticket.bet_price),
                 1 if self.is_hit else 0,  # 的中なら1を返す、外れなら0
                 int(self.refund)]
