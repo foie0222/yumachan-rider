@@ -54,7 +54,9 @@ def main():
 
 
 def verify():
-    date_list = ['races/20200307.txt']
+    date_list = [
+        'races/202001*.txt',
+        'races/201912*.txt']
     for date in date_list:
         file_list = sorted(glob.glob(date), reverse=False)
         for target_file in file_list:

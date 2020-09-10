@@ -6,10 +6,12 @@ class Odds:
             self,
             tan_odds_list,
             fuku_min_odds_list,
+            umaren_odds_list,
             wide_odds_list,
             trio_odds_list):
         self.tan_odds_list = tan_odds_list
         self.fuku_min_odds_list = fuku_min_odds_list
+        self.umaren_odds_list = umaren_odds_list
         self.wide_odds_list = wide_odds_list
         self.trio_odds_list = trio_odds_list
 
@@ -32,6 +34,16 @@ class FukuMinOdds:
     def to_string(self):
         return 'FukuMinOdds=[umano={}, fuku_min_odds={}]'.format(
             self.umano, self.fuku_min_odds)
+
+
+class UmarenOdds:
+    def __init__(self, pair_umano, umaren_odds):
+        self.pair_umano = pair_umano  # like 01-03
+        self.umaren_odds = umaren_odds
+
+    def to_string(self):
+        return 'UmarenOdds=[pair_umano={}, umaren_odds={}]'.format(
+            self.pair_umano, self.umaren_odds)
 
 
 class WideOdds:
@@ -58,6 +70,7 @@ def get_realtime_odds(opdt, rcoursecd, rno):
     return Odds(
         get_realtime_tan_odds(opdt, rcoursecd, rno),
         get_realtime_fuku_min_odds(opdt, rcoursecd, rno),
+        get_realtime_umaren_odds(opdt, rcoursecd, rno),
         get_realtime_wide_odds(opdt, rcoursecd, rno),
         get_realtime_trio_odds(opdt, rcoursecd, rno))
 
@@ -67,6 +80,7 @@ def get_just_before_odds(opdt, rcoursecd, rno):
     return Odds(
         get_just_before_tan_odds(opdt, rcoursecd, rno),
         get_just_before_fuku_odds(opdt, rcoursecd, rno),
+        get_just_before_umaren_odds(opdt, rcoursecd, rno),
         get_realtime_wide_odds(opdt, rcoursecd, rno),  # ワイドは直前オッズを取得できない
         get_realtime_trio_odds(opdt, rcoursecd, rno))  # 3連複は直前オッズを取得できない
 
@@ -189,6 +203,103 @@ def convert_fuku_min_odds_list(realtime_fuku_min_odds):
                 convert_float(fuku_min_odds_value)))
 
     return fuku_min_odds_list
+
+
+# リアルタイムオッズを取得
+def get_realtime_umaren_odds(opdt, rcoursecd, rno):
+    rcourse = convert_rcoursecd_num(rcoursecd)
+    realtime_umaren_odds = con.get_data(
+        """
+        select
+            URENODDS01,
+            URENODDS02,
+            URENODDS03,
+            URENODDS04,
+            URENODDS05,
+            URENODDS06,
+            URENODDS07,
+            URENODDS08,
+            URENODDS09,
+            URENODDS10,
+            URENODDS11,
+            URENODDS12,
+            URENODDS13,
+            URENODDS14,
+            URENODDS15,
+            URENODDS16,
+            URENODDS17
+        from
+            ODDSUREN
+        where
+            OPDT = '{}'
+        and
+            rcoursecd = '{}'
+        and
+            rno = '{}'
+        """.format(opdt, rcourse, rno)
+    )
+    return convert_umaren_odds_list(realtime_umaren_odds)
+
+
+# 検証用に直前オッズを取得
+def get_just_before_umaren_odds(opdt, rcoursecd, rno):
+    rcourse = convert_rcoursecd_num(rcoursecd)
+    realtime_umaren_odds = con.get_data(
+        """
+        select
+            URENODDS01,
+            URENODDS02,
+            URENODDS03,
+            URENODDS04,
+            URENODDS05,
+            URENODDS06,
+            URENODDS07,
+            URENODDS08,
+            URENODDS09,
+            URENODDS10,
+            URENODDS11,
+            URENODDS12,
+            URENODDS13,
+            URENODDS14,
+            URENODDS15,
+            URENODDS16,
+            URENODDS17
+        from
+            RODDSUREN
+        where
+            OPDT = '{}'
+        and
+            rcoursecd = '{}'
+        and
+            rno = '{}'
+        and
+            RLSDTTM < '{}' ||  (select POSTTM from RACEMST where OPDT = '{}' and rcoursecd = '{}' and rno = '{}')
+        order by
+            RLSDTTM desc
+        rows 1
+        """.format(opdt, rcourse, rno, opdt[4:8], opdt, rcourse, rno)
+    )
+    return convert_umaren_odds_list(realtime_umaren_odds)
+
+
+def convert_umaren_odds_list(realtime_umaren_odds):
+    umaren_odds_list = []
+    for column, row in realtime_umaren_odds.iteritems():
+        umaren_odds_row = str(realtime_umaren_odds[column][0])
+        umaren_odds_value_list = [umaren_odds_row[i: i + 6]
+                                  for i in range(0, len(umaren_odds_row), 6)]  # 6桁ずつ分割
+
+        for index, odds_value in enumerate(umaren_odds_value_list):
+            if odds_value == 'None':
+                continue
+            umaren_odds_list.append(
+                UmarenOdds(
+                    get_pair_num_from_column_and_index(
+                        column,
+                        index),
+                    convert_float(odds_value)))
+
+    return umaren_odds_list
 
 
 def get_realtime_wide_odds(opdt, rcoursecd, rno):
@@ -422,7 +533,7 @@ def convert_trio_odds_list(realtime_trio_odds):
 
 # 馬の連番を抽出
 def get_pair_num_from_column_and_index(column, index):
-    umano_column = column.replace('WIDEMINODDS', '')
+    umano_column = column.replace('URENODDS', '').replace('WIDEMINODDS', '')
     return umano_column + '-' + str(int(umano_column) + index + 1).zfill(2)
 
 

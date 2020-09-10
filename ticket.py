@@ -126,6 +126,52 @@ def make_ticket(entry, realtime_odds):
     sorted_fuku_ticket_list = sorted(fuku_ticket_list, key=lambda t: t.number)
     ticket_list.extend(sorted_fuku_ticket_list)
 
+    # 馬連を購入
+    just_before_umaren_odds_list = realtime_odds.umaren_odds_list
+    umaren_ticket_list = []
+    for i, horse1 in enumerate(entry.horse_list):
+        for horse2 in entry.horse_list[i + 1:]:
+            pair_num = make_wide(horse1.umano, horse2.umano)
+            odds = list(
+                filter(
+                    lambda real_odds: True if pair_num == real_odds.pair_umano else False,
+                    just_before_umaren_odds_list))[0]
+
+            horse1_in_umaren_probability = get_ren_probability(
+                horse1.probability)
+            horse2_in_umaren_probability = get_ren_probability(
+                horse2.probability)
+
+            bet = 0
+            expected_value = odds.umaren_odds * (
+                horse1.probability * (
+                    horse2_in_umaren_probability - horse2.probability) + horse2.probability * (
+                    horse1_in_umaren_probability - horse1.probability)) / 100
+
+            if expected_value >= 180 and odds.umaren_odds <= 800 and odds.umaren_odds >= 0:
+                bet = lowest_bet_for(expected_value * 200, odds.umaren_odds)
+            else:
+                continue
+
+            ticket_umaren = Ticket(
+                entry.opdt,
+                entry.rcoursecd,
+                entry.rno,
+                'UMAREN',
+                'NORMAL',
+                '',
+                make_wide(
+                    horse1.umano,
+                    horse2.umano),
+                str(bet),
+                expected_value,
+                odds.umaren_odds)
+            umaren_ticket_list.append(ticket_umaren)
+
+    sorted_umaren_ticket_list = sorted(
+        umaren_ticket_list, key=lambda t: t.number)
+    ticket_list.extend(sorted_umaren_ticket_list)
+
     # ワイドを購入
     realtime_wide_odds_list = realtime_odds.wide_odds_list
     wide_ticket_list = []
@@ -280,6 +326,48 @@ def make_verification_ticket(entry, just_before_odds):
 
     sorted_fuku_ticket_list = sorted(fuku_ticket_list, key=lambda t: t.number)
     ticket_list.extend(sorted_fuku_ticket_list)
+
+    # 馬連を購入
+    just_before_umaren_odds_list = just_before_odds.umaren_odds_list
+    umaren_ticket_list = []
+    for i, horse1 in enumerate(entry.horse_list):
+        for horse2 in entry.horse_list[i + 1:]:
+            pair_num = make_wide(horse1.umano, horse2.umano)
+            odds = list(
+                filter(
+                    lambda real_odds: True if pair_num == real_odds.pair_umano else False,
+                    just_before_umaren_odds_list))[0]
+
+            horse1_in_umaren_probability = get_ren_probability(
+                horse1.probability)
+            horse2_in_umaren_probability = get_ren_probability(
+                horse2.probability)
+
+            expected_value = odds.umaren_odds * (
+                horse1.probability * (
+                    horse2_in_umaren_probability - horse2.probability) + horse2.probability * (
+                    horse1_in_umaren_probability - horse1.probability)) / 100
+
+            bet = 0
+
+            ticket_umaren = Ticket(
+                entry.opdt,
+                entry.rcoursecd,
+                entry.rno,
+                'UMAREN',
+                'NORMAL',
+                '',
+                make_wide(
+                    horse1.umano,
+                    horse2.umano),
+                str(bet),
+                expected_value,
+                odds.umaren_odds)
+            umaren_ticket_list.append(ticket_umaren)
+
+    sorted_umaren_ticket_list = sorted(
+        umaren_ticket_list, key=lambda t: t.number)
+    ticket_list.extend(sorted_umaren_ticket_list)
 
     # # ワイドを購入
     # realtime_wide_odds_list = just_before_odds.wide_odds_list

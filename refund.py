@@ -94,6 +94,44 @@ def make_fuku_refund_list(refund_df):
     return fuku_refund_list
 
 
+# 馬連的中馬番と払戻金のリストを作成する
+def get_umaren_refund_list(opdt, rcoursecd, rno):
+    rcoursecd = convert_rcoursecd_num(rcoursecd)
+    refund_df = con.get_data(
+        """
+        select
+            URENNO1,
+            URENRFD1,
+            URENNO2,
+            URENRFD2,
+            URENNO3,
+            URENRFD3
+        from
+            RFD
+        where
+            OPDT = {}
+        and
+            rcoursecd = {}
+        and
+            rno = {}
+        """.format(opdt, rcoursecd, rno)
+    )
+    umaren_refund_list = make_umaren_refund_list(refund_df)
+    return umaren_refund_list
+
+
+# データフレームから馬連Refundリストを作成する
+def make_umaren_refund_list(refund_df):
+    umaren_refund_list = []
+    for NO in ['1', '2', '3']:
+        if refund_df['URENNO' + NO][0] is None:  # 値がなかったら空
+            continue
+        umaren_refund_list.append(Refund(
+            add_hyphen(refund_df['URENNO' + NO][0]), refund_df['URENRFD' + NO][0]))
+
+    return umaren_refund_list
+
+
 # ワイド的中馬番と払戻金のリストを作成する
 def get_wide_refund_list(opdt, rcoursecd, rno):
     rcoursecd = convert_rcoursecd_num(rcoursecd)
@@ -128,6 +166,18 @@ def get_wide_refund_list(opdt, rcoursecd, rno):
     return wide_refund_list
 
 
+# データフレームからワイドRefundリストを作成する
+def make_wide_refund_list(refund_df):
+    wide_refund_list = []
+    for NO in ['1', '2', '3', '4', '5', '6', '7']:
+        if refund_df['WIDENO' + NO][0] is None:  # 値がなかったら空
+            continue
+        wide_refund_list.append(Refund(
+            add_hyphen(refund_df['WIDENO' + NO][0]), refund_df['WIDERFD' + NO][0]))
+
+    return wide_refund_list
+
+
 # 3連複的中馬番と払戻金のリストを作成する
 def get_trio_refund_list(opdt, rcoursecd, rno):
     rcoursecd = convert_rcoursecd_num(rcoursecd)
@@ -154,19 +204,7 @@ def get_trio_refund_list(opdt, rcoursecd, rno):
     return trio_refund_list
 
 
-# データフレームからワイドRefundリストを作成する
-def make_wide_refund_list(refund_df):
-    wide_refund_list = []
-    for NO in ['1', '2', '3', '4', '5', '6', '7']:
-        if refund_df['WIDENO' + NO][0] is None:  # 値がなかったら空
-            continue
-        wide_refund_list.append(Refund(
-            add_hyphen(refund_df['WIDENO' + NO][0]), refund_df['WIDERFD' + NO][0]))
-
-    return wide_refund_list
-
-
-# データフレームからワイドRefundリストを作成する
+# データフレームから3連複Refundリストを作成する
 def make_trio_refund_list(refund_df):
     trio_refund_list = []
     for NO in ['1', '2', '3']:

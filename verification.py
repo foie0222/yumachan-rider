@@ -45,6 +45,9 @@ def get_verification_list(ticket_list):
     # 複勝の払い戻し結果を取得
     fuku_refund_list = get_fuku_refund_list(opdt, rcoursecd, rno)
 
+    # 馬連の払い戻し結果を取得
+    umaren_refund_list = get_umaren_refund_list(opdt, rcoursecd, rno)
+
     # ワイドの払い戻し結果を取得
     wide_refund_list = get_wide_refund_list(opdt, rcoursecd, rno)
 
@@ -61,6 +64,11 @@ def get_verification_list(ticket_list):
             verification_list.append(
                 get_verification(
                     ticket, fuku_refund_list))
+
+        if ticket.denomination == 'UMAREN':
+            verification_list.append(
+                get_verification(
+                    ticket, umaren_refund_list))
 
         if ticket.denomination == 'WIDE':
             verification_list.append(
