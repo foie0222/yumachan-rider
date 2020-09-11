@@ -228,21 +228,14 @@ def make_ticket(entry, realtime_odds):
                         lambda real_odds: True if pair_num == real_odds.pair_umano else False,
                         realtime_trio_odds_list))[0]
 
-                horse1_in_trio_probability = get_wide_probability(
-                    horse1.probability)
-                horse2_in_trio_probability = get_wide_probability(
-                    horse2.probability)
-                horse3_in_trio_probability = get_wide_probability(
-                    horse3.probability)
-
                 bet = 0
-                expected_trio_final_odds = odds.trio_odds * 0.9
-                expected_value = expected_trio_final_odds * horse1_in_trio_probability * \
-                    horse2_in_trio_probability * horse3_in_trio_probability / 10000
-                if expected_value >= 1000 and expected_trio_final_odds <= 2000 and expected_trio_final_odds >= 100:
+                expected_value = get_trio_expected_possibility(
+                    horse1.probability, horse2.probability, horse3.probability) * odds.trio_odds
+
+                if expected_value >= 200 and odds.trio_odds <= 2000 and odds.trio_odds >= 0:
                     bet = lowest_bet_for(
-                        expected_value * 10,
-                        expected_trio_final_odds)
+                        expected_value * 150,
+                        odds.trio_odds)
                 else:
                     continue
 
@@ -269,105 +262,105 @@ def make_ticket(entry, realtime_odds):
 
 
 def make_verification_ticket(entry, just_before_odds):
-    ticket_list = []
+    return make_ticket(entry, just_before_odds)
 
-    # 単勝購入
-    realtime_tan_odds_list = just_before_odds.tan_odds_list
-    tan_ticket_list = []
-    for horse in entry.horse_list:
+    # # 単勝購入
+    # realtime_tan_odds_list = just_before_odds.tan_odds_list
+    # tan_ticket_list = []
+    # for horse in entry.horse_list:
 
-        odds = list(filter(lambda real_odds: True if real_odds.umano ==
-                           horse.umano else False, realtime_tan_odds_list))[0]
+    #     odds = list(filter(lambda real_odds: True if real_odds.umano ==
+    # horse.umano else False, realtime_tan_odds_list))[0]
 
-        bet = 0
-        expected_value = horse.probability * odds.tanodds
+    #     bet = 0
+    #     expected_value = horse.probability * odds.tanodds
 
-        ticket = Ticket(
-            entry.opdt,
-            entry.rcoursecd,
-            entry.rno,
-            'TANSYO',
-            'NORMAL',
-            '',
-            horse.umano,
-            str(bet),
-            expected_value,
-            odds.tanodds)
-        tan_ticket_list.append(ticket)
+    #     ticket = Ticket(
+    #         entry.opdt,
+    #         entry.rcoursecd,
+    #         entry.rno,
+    #         'TANSYO',
+    #         'NORMAL',
+    #         '',
+    #         horse.umano,
+    #         str(bet),
+    #         expected_value,
+    #         odds.tanodds)
+    #     tan_ticket_list.append(ticket)
 
-    sorted_tan_ticket_list = sorted(tan_ticket_list, key=lambda t: t.number)
-    ticket_list.extend(sorted_tan_ticket_list)
+    # sorted_tan_ticket_list = sorted(tan_ticket_list, key=lambda t: t.number)
+    # ticket_list.extend(sorted_tan_ticket_list)
 
-    # 複勝購入
-    fuku_min_odds_list = just_before_odds.fuku_min_odds_list
-    fuku_ticket_list = []
-    for horse in entry.horse_list:
+    # # 複勝購入
+    # fuku_min_odds_list = just_before_odds.fuku_min_odds_list
+    # fuku_ticket_list = []
+    # for horse in entry.horse_list:
 
-        odds = list(filter(lambda real_odds: True if real_odds.umano ==
-                           horse.umano else False, fuku_min_odds_list))[0]
+    #     odds = list(filter(lambda real_odds: True if real_odds.umano ==
+    #                        horse.umano else False, fuku_min_odds_list))[0]
 
-        fuku_probability = get_fuku_probability(horse.probability, entry)
+    #     fuku_probability = get_fuku_probability(horse.probability, entry)
 
-        bet = 0
-        expected_value = fuku_probability * odds.fuku_min_odds
+    #     bet = 0
+    #     expected_value = fuku_probability * odds.fuku_min_odds
 
-        ticket_fuku = Ticket(
-            entry.opdt,
-            entry.rcoursecd,
-            entry.rno,
-            'FUKUSYO',
-            'NORMAL',
-            '',
-            horse.umano,
-            str(bet),
-            expected_value,
-            odds.fuku_min_odds)
-        fuku_ticket_list.append(ticket_fuku)
+    #     ticket_fuku = Ticket(
+    #         entry.opdt,
+    #         entry.rcoursecd,
+    #         entry.rno,
+    #         'FUKUSYO',
+    #         'NORMAL',
+    #         '',
+    #         horse.umano,
+    #         str(bet),
+    #         expected_value,
+    #         odds.fuku_min_odds)
+    #     fuku_ticket_list.append(ticket_fuku)
 
-    sorted_fuku_ticket_list = sorted(fuku_ticket_list, key=lambda t: t.number)
-    ticket_list.extend(sorted_fuku_ticket_list)
+    # sorted_fuku_ticket_list = sorted(fuku_ticket_list, key=lambda t: t.number)
+    # ticket_list.extend(sorted_fuku_ticket_list)
 
-    # 馬連を購入
-    just_before_umaren_odds_list = just_before_odds.umaren_odds_list
-    umaren_ticket_list = []
-    for i, horse1 in enumerate(entry.horse_list):
-        for horse2 in entry.horse_list[i + 1:]:
-            pair_num = make_wide(horse1.umano, horse2.umano)
-            odds = list(
-                filter(
-                    lambda real_odds: True if pair_num == real_odds.pair_umano else False,
-                    just_before_umaren_odds_list))[0]
+    # # 馬連を購入
+    # just_before_umaren_odds_list = just_before_odds.umaren_odds_list
+    # umaren_ticket_list = []
+    # for i, horse1 in enumerate(entry.horse_list):
+    #     for horse2 in entry.horse_list[i + 1:]:
+    #         pair_num = make_wide(horse1.umano, horse2.umano)
+    #         odds = list(
+    #             filter(
+    #                 lambda real_odds: True if pair_num == real_odds.pair_umano else False,
+    #                 just_before_umaren_odds_list))[0]
 
-            horse1_in_umaren_probability = get_ren_probability(
-                horse1.probability)
-            horse2_in_umaren_probability = get_ren_probability(
-                horse2.probability)
+    #         horse1_in_umaren_probability = get_ren_probability(
+    #             horse1.probability)
+    #         horse2_in_umaren_probability = get_ren_probability(
+    #             horse2.probability)
 
-            expected_value = odds.umaren_odds * (
-                horse1.probability * (
-                    horse2_in_umaren_probability - horse2.probability) + horse2.probability * (
-                    horse1_in_umaren_probability - horse1.probability)) / 100
+    #         expected_value = odds.umaren_odds * (
+    #             horse1.probability * (
+    #                 horse2_in_umaren_probability - horse2.probability) + horse2.probability * (
+    #                 horse1_in_umaren_probability - horse1.probability)) / 100
 
-            bet = 0
+    #         bet = 0
 
-            ticket_umaren = Ticket(
-                entry.opdt,
-                entry.rcoursecd,
-                entry.rno,
-                'UMAREN',
-                'NORMAL',
-                '',
-                make_wide(
-                    horse1.umano,
-                    horse2.umano),
-                str(bet),
-                expected_value,
-                odds.umaren_odds)
-            umaren_ticket_list.append(ticket_umaren)
+    #         ticket_umaren = Ticket(
+    #             entry.opdt,
+    #             entry.rcoursecd,
+    #             entry.rno,
+    #             'UMAREN',
+    #             'NORMAL',
+    #             '',
+    #             make_wide(
+    #                 horse1.umano,
+    #                 horse2.umano),
+    #             str(bet),
+    #             expected_value,
+    #             odds.umaren_odds)
+    #         umaren_ticket_list.append(ticket_umaren)
 
-    sorted_umaren_ticket_list = sorted(
-        umaren_ticket_list, key=lambda t: t.number)
-    ticket_list.extend(sorted_umaren_ticket_list)
+    # sorted_umaren_ticket_list = sorted(
+    #     umaren_ticket_list, key=lambda t: t.number)
+    # ticket_list.extend(sorted_umaren_ticket_list)
 
     # # ワイドを購入
     # realtime_wide_odds_list = just_before_odds.wide_odds_list
@@ -425,23 +418,10 @@ def make_verification_ticket(entry, just_before_odds):
     #                     lambda real_odds: True if pair_num == real_odds.pair_umano else False,
     #                     realtime_trio_odds_list))[0]
 
-    #             horse1_in_trio_probability = get_wide_probability(
-    #                 horse1.probability)
-    #             horse2_in_trio_probability = get_wide_probability(
-    #                 horse2.probability)
-    #             horse3_in_trio_probability = get_wide_probability(
-    #                 horse3.probability)
-
     #             bet = 0
-    #             expected_trio_final_odds = odds.trio_odds * 0.9
-    #             expected_value = expected_trio_final_odds * horse1_in_trio_probability * \
-    #                 horse2_in_trio_probability * horse3_in_trio_probability / 10000
-    #             if expected_value >= 1000 and expected_trio_final_odds <= 2000 and expected_trio_final_odds >= 100:
-    #                 bet = lowest_bet_for(
-    #                     expected_value * 10,
-    #                     expected_trio_final_odds)
-    #             else:
-    #                 continue
+    #             expected_value = get_trio_expected_possibility(
+    # horse1.probability, horse2.probability, horse3.probability) *
+    # odds.trio_odds
 
     #             ticket_trio = Ticket(
     #                 entry.opdt,
@@ -462,7 +442,7 @@ def make_verification_ticket(entry, just_before_odds):
     # sorted_trio_ticket_list = sorted(trio_ticket_list, key=lambda t: t.number)
     # ticket_list.extend(sorted_trio_ticket_list)
 
-    return ticket_list
+    # return ticket_list
 
 
 def lowest_bet_for(pay, odds):
@@ -507,11 +487,32 @@ def get_wide_probability(x):
     return res if res < 95 else 95
 
 
+# 単勝率から3連複率を算出
+def get_trio_expected_possibility(x, y, z):
+    x_y_z = x * (get_ren_probability(y) - y) * \
+        (get_wide_probability(z) - get_ren_probability(z)) / 1000000
+    x_z_y = x * (get_ren_probability(z) - z) * \
+        (get_wide_probability(y) - get_ren_probability(y)) / 1000000
+    y_x_z = y * (get_ren_probability(x) - x) * \
+        (get_wide_probability(z) - get_ren_probability(z)) / 1000000
+    y_z_x = y * (get_ren_probability(z) - z) * \
+        (get_wide_probability(x) - get_ren_probability(x)) / 1000000
+    z_x_y = z * (get_ren_probability(x) - x) * \
+        (get_wide_probability(y) - get_ren_probability(y)) / 1000000
+    z_y_x = z * (get_ren_probability(y) - y) * \
+        (get_wide_probability(x) - get_ren_probability(x)) / 1000000
+
+    possibility = x_y_z + x_z_y + y_x_z + y_z_x + z_x_y + z_y_x
+    return possibility * 100
+
+
 def convert_to_kanji(txt):
     if 'TANSYO' in txt:
         return '単勝'
     if 'FUKUSYO' in txt:
         return '複勝'
+    if 'UMAREN' in txt:
+        return '馬連'
     if 'WIDE' in txt:
         return 'ワイド'
     if 'SANRENPUKU' in txt:

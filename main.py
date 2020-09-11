@@ -54,9 +54,7 @@ def main():
 
 
 def verify():
-    date_list = [
-        'races/202001*.txt',
-        'races/201912*.txt']
+    date_list = ['races/202006*.txt']
     for date in date_list:
         file_list = sorted(glob.glob(date), reverse=False)
         for target_file in file_list:
@@ -88,8 +86,8 @@ def verify():
                     # 検証用のデータを作成
                     verification_list = get_verification_list(ticket_list)
 
-                    for verification in verification_list:
-                        print(verification.to_string())
+                    # for verification in verification_list:
+                    #     print(verification.to_string())
 
                     # csv書き出し
                     write_result_to_csv(entry.opdt, verification_list)
@@ -102,6 +100,8 @@ def verify():
             tan_refund = 0
             fuku_bet = 0
             fuku_refund = 0
+            umaren_bet = 0
+            umaren_refund = 0
             wide_bet = 0
             wide_refund = 0
             trio_bet = 0
@@ -117,12 +117,17 @@ def verify():
                     fuku_refund += int(verification.ticket.bet_price) * \
                         verification.refund / 100
 
+                if verification.ticket.denomination == 'UMAREN':
+                    umaren_bet += int(verification.ticket.bet_price)
+                    umaren_refund += int(verification.ticket.bet_price) * \
+                        verification.refund / 100
+
                 if verification.ticket.denomination == 'WIDE':
                     wide_bet += int(verification.ticket.bet_price)
                     wide_refund += int(verification.ticket.bet_price) * \
                         verification.refund / 100
 
-                if verification.ticket.denomination == 'TRIO':
+                if verification.ticket.denomination == 'SANRENPUKU':
                     trio_bet += int(verification.ticket.bet_price)
                     trio_refund += int(verification.ticket.bet_price) * \
                         verification.refund / 100
@@ -138,6 +143,8 @@ def verify():
             print('tan_refund is ', '{:.0f}'.format(tan_refund))
             print('fuku_bet is    ', '{:.0f}'.format(fuku_bet))
             print('fuku_refund is ', '{:.0f}'.format(fuku_refund))
+            print('umaren_bet is    ', '{:.0f}'.format(umaren_bet))
+            print('umaren_refund is ', '{:.0f}'.format(umaren_refund))
             print('wide_bet is    ', '{:.0f}'.format(wide_bet))
             print('wide_refund is ', '{:.0f}'.format(wide_refund))
             print('trio_bet is    ', '{:.0f}'.format(trio_bet))

@@ -75,7 +75,7 @@ def get_verification_list(ticket_list):
                 get_verification(
                     ticket, wide_refund_list))
 
-        if ticket.denomination == 'TRIO':
+        if ticket.denomination == 'SANRENPUKU':
             verification_list.append(
                 get_verification(
                     ticket, trio_refund_list))
