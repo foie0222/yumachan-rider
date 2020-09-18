@@ -47,7 +47,7 @@ def main():
     send_slack(jpgs)
 
     # tweet
-    tweet_with_jpg(entry, len(jpgs))
+    # tweet_with_jpg(entry, len(jpgs))
 
     # 購入馬券リストをGSSに書き出す
     write_gss(ticket_list, timestamp, True)
