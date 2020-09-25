@@ -59,7 +59,7 @@ class Ticket:
             str(self.number) + ' ' + str(self.bet_price) + '円'
 
 
-def make_ticket(entry, realtime_odds):
+def make_ticket(entry, realtime_odds, limit_vote_amount):
     ticket_list = []
 
     # 単勝購入
@@ -73,7 +73,7 @@ def make_ticket(entry, realtime_odds):
         bet = 0
         expected_value = horse.probability * odds.tanodds
         if expected_value >= 150 and odds.tanodds <= 150 and odds.tanodds >= 5.0:
-            bet = lowest_bet_for(expected_value * 700, odds.tanodds)
+            bet = lowest_bet_for(limit_vote_amount * 0.06 * expected_value / 150, odds.tanodds)
         else:
             continue
 
@@ -106,7 +106,7 @@ def make_ticket(entry, realtime_odds):
         bet = 0
         expected_value = fuku_probability * odds.fuku_min_odds
         if expected_value >= 110 and odds.fuku_min_odds <= 10.0 and odds.fuku_min_odds >= 3.0:
-            bet = lowest_bet_for(expected_value * 1000, odds.fuku_min_odds)
+            bet = lowest_bet_for(limit_vote_amount * 0.06 * expected_value / 110, odds.fuku_min_odds)
         else:
             continue
 
@@ -149,7 +149,7 @@ def make_ticket(entry, realtime_odds):
                     horse1_in_umaren_probability - horse1.probability)) / 100
 
             if expected_value >= 180 and odds.umaren_odds <= 800 and odds.umaren_odds >= 0:
-                bet = lowest_bet_for(expected_value * 600, odds.umaren_odds)
+                bet = lowest_bet_for(limit_vote_amount * 0.06 * expected_value / 180, odds.umaren_odds)
             else:
                 continue
 
@@ -193,7 +193,7 @@ def make_ticket(entry, realtime_odds):
 
             bet = 0
             if expected_value >= 300 and odds.wideodds <= 150 and odds.wideodds >= 20:
-                bet = lowest_bet_for(expected_value * 350, odds.wideodds)
+                bet = lowest_bet_for(limit_vote_amount * 0.06 * expected_value / 300, odds.wideodds)
             else:
                 continue
 
@@ -233,9 +233,7 @@ def make_ticket(entry, realtime_odds):
                     horse1.probability, horse2.probability, horse3.probability) * odds.trio_odds
 
                 if expected_value >= 200 and odds.trio_odds <= 2000 and odds.trio_odds >= 0:
-                    bet = lowest_bet_for(
-                        expected_value * 1000,
-                        odds.trio_odds)
+                    bet = lowest_bet_for(limit_vote_amount * 0.06 * expected_value / 200, odds.trio_odds)
                 else:
                     continue
 
@@ -262,7 +260,7 @@ def make_ticket(entry, realtime_odds):
 
 
 def make_verification_ticket(entry, just_before_odds):
-    return make_ticket(entry, just_before_odds)
+    return make_ticket(entry, just_before_odds, 100000)
 
     # # 単勝購入
     # realtime_tan_odds_list = just_before_odds.tan_odds_list

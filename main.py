@@ -5,7 +5,7 @@ from entry import get_entry
 from ticket import make_ticket, make_verification_ticket
 from writer import make_csv, write_races_csv, write_result_to_csv
 from verification import get_verification_list
-from ipatgo import vote
+from ipatgo import vote, get_limit_vote_amount
 from twitter import tweet_with_jpg
 from images import create_jpg
 from slack import send_slack
@@ -31,8 +31,11 @@ def main():
     # リアルタイムオッズを取得
     realtime_odds = get_realtime_odds(entry.opdt, entry.rcoursecd, entry.rno)
 
+    # 購入限度額を取得
+    limit_vote_amount = get_limit_vote_amount()
+
     # 購入馬券リストを作る
-    ticket_list = make_ticket(entry, realtime_odds)
+    ticket_list = make_ticket(entry, realtime_odds, limit_vote_amount)
 
     # 購入馬券リストをcsvに書き出す
     make_csv(ticket_list, timestamp)
