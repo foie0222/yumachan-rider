@@ -32,10 +32,10 @@ def main():
     realtime_odds = get_realtime_odds(entry.opdt, entry.rcoursecd, entry.rno)
 
     # 購入限度額を取得
-    limit_vote_amount = get_limit_vote_amount()
+    # limit_vote_amount = get_limit_vote_amount()
 
     # 購入馬券リストを作る
-    ticket_list = make_ticket(entry, realtime_odds, limit_vote_amount)
+    ticket_list = make_ticket(entry, realtime_odds, None)
 
     # 購入馬券リストをcsvに書き出す
     make_csv(ticket_list, timestamp)
