@@ -1,6 +1,14 @@
+import os
 import gspread
-from oauth2client.service_account import ServiceAccountCredentials
 import time
+from dotenv import load_dotenv
+from oauth2client.service_account import ServiceAccountCredentials
+
+# 環境変数の読み取り
+dotenv_path = os.path.join(os.path.dirname(__file__), '.env')
+load_dotenv(dotenv_path)
+
+SPREADSHEET_KEY = os.environ.get('SPREADSHEET_KEY')
 
 
 def write_gss(record_list, timestamp, is_main):
@@ -11,8 +19,6 @@ def write_gss(record_list, timestamp, is_main):
     credentials = ServiceAccountCredentials.from_json_keyfile_name(
         'credential/keibaautovote.json', scope)
     gc = gspread.authorize(credentials)
-
-    SPREADSHEET_KEY = '1xjthz5vd-zuAqTI6FXrI_G6ldGIDiXXev4pgnFexJ4o' if is_main else '1WE4R9B0ua9u72_tsKgKxGREtCH9EhKPon-vXOANV8KI'
 
     # 対象のスプレッドシートを取得
     spreadsheet = gc.open_by_key(SPREADSHEET_KEY)

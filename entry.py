@@ -1,4 +1,4 @@
-from horse import get_horse_list
+from horse import get_horse_list, get_horse_list_from_png_by_google
 import re
 
 
@@ -19,6 +19,16 @@ def get_entry(header_txt, body_txt):
     horser_list = get_horse_list(body_txt)
 
     return Entry(opdt, rcoursecd, rno, rname, horser_list)
+
+
+def get_entry_by_png(header_txt, png_url):
+    opdt = get_opdt(header_txt)
+    rcourse = get_rcoursecd(header_txt[:15])
+    rno = get_rno(header_txt)
+    rname = get_rname(header_txt)
+    horser_list = get_horse_list_from_png_by_google(png_url)
+
+    return Entry(opdt, rcourse, rno, rname, horser_list)
 
 
 def get_opdt(row):

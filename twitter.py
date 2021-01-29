@@ -1,138 +1,57 @@
-import time
-import sys
-import chromedriver_binary
+import json
 import os
-import subprocess
-import io
-import re
-import base64
-from os.path import join, dirname
 from dotenv import load_dotenv
-from selenium import webdriver
-from selenium.webdriver.common.keys import Keys
-from requests import request as rq
-from selenium.webdriver import Chrome, ChromeOptions
-from PIL import Image, ImageDraw, ImageFont
-import math as m
+from requests_oauthlib import OAuth1Session
 
 # 環境変数の読み取り
-dotenv_path = join(dirname(__file__), '.env')
+dotenv_path = os.path.join(os.path.dirname(__file__), '.env')
 load_dotenv(dotenv_path)
 
-TWITTER_ID = os.environ.get("TWITTER_ID")
-TWITTER_PW = os.environ.get("TWITTER_PW")
+CK = os.environ.get('TWITTER_API_KEY')
+CS = os.environ.get('TWITTER_API_KEY_SECRET')
+AT = os.environ.get('TWITTER_ACCESS_TOKEN')
+AS = os.environ.get('TWITTER_ACCESS_TOKEN_SECRET')
 
 
-def tweet_with_jpg(entry, jpg_nums):
-    try:
-        # オプション追加
-        options = webdriver.ChromeOptions()
-        options.add_argument("--no-sandbox")
-        options.add_argument('--headless')
-        driver = get_webdriver(options)
+def tweet(path_list_images):
+    oauth = OAuth1Session(CK, CS, AT, AS)
 
-        TWITTER_LOGIN_URL = "https://twitter.com/login"
-        driver.get(TWITTER_LOGIN_URL)
+    url_media = 'https://upload.twitter.com/1.1/media/upload.json'
+    url_text = 'https://api.twitter.com/1.1/statuses/update.json'
 
-        time.sleep(1)
-        id = driver.find_element_by_name('session[username_or_email]')
-        id.send_keys(TWITTER_ID)
+    media_ids = ''
 
-        password = driver.find_element_by_name('session[password]')
-        password.send_keys(TWITTER_PW)
+    # 画像の枚数分ループ
+    for path in path_list_images:
+        files = {'media': open(path, 'rb')}
+        req_media = oauth.post(url_media, files=files)
 
-        # ログイン
-        password.send_keys(Keys.ENTER)
-        time.sleep(1)
+        # レスポンスを確認
+        if req_media.status_code != 200:
+            print('画像アップデート失敗: {}'.format(req_media.text))
+            return -1
 
-        # jpgファイルを枚数分アップロード
-        for jpg_num in range(jpg_nums):
-            file_upload(driver, jpg_num)
+        media_id = json.loads(req_media.text)['media_id']
+        media_id_string = json.loads(req_media.text)['media_id_string']
+        print('Media ID: {} '.format(media_id))
+        # メディアIDの文字列をカンマ','で結合
+        if media_ids == '':
+            media_ids += media_id_string
+        else:
+            media_ids = media_ids + ',' + media_id_string
 
-        # ツイート
-        send_tweet(driver)
-        time.sleep(10)
+    print('media_ids: ', media_ids)
+    params = {'status': '', 'media_ids': [media_ids]}
+    req_text = oauth.post(url_text, params=params)
 
-    except Exception as e:
-        print(e.args)
+    # 再びレスポンスを確認
+    if req_text.status_code != 200:
+        print("テキストアップデート失敗: {}".format(req_text.text))
+        return -1
 
-    driver.quit()
-
-
-def file_upload(driver, jpg_num):
-    if os.name == 'posix':
-        # 入力
-        elem = driver.find_element_by_class_name(
-            'public-DraftStyleDefault-block')
-        subprocess.run(
-            ["osascript",
-             "-e",
-             'set the clipboard to (read (POSIX file "./image/vote_' +
-             str(jpg_num) +
-             '.jpg") as JPEG picture)'])
-        # 画像をペースト
-        elem.send_keys(Keys.SHIFT, Keys.INSERT)
-
-    if os.name == 'nt':
-        driver.execute_script("window.open()")  # 新規タブ
-        driver.switch_to.window(driver.window_handles[1])  # スイッチ
-        driver.get(
-            'file:///C:/develop/git/yumachan-rider/image/vote_' +
-            str(jpg_num) +
-            '.jpg')
-        elem = driver.find_element_by_tag_name('body')
-        elem.send_keys(Keys.CONTROL, 'c')
-        driver.close()
-        driver.switch_to.window(driver.window_handles[0])
-
-        elem = driver.find_element_by_class_name(
-            'public-DraftStyleDefault-block')
-        elem.send_keys(Keys.CONTROL, "v")
+    print("tweet uploaded\n")
+    return 1
 
 
-
-def send_tweet(driver):
-    elem = driver.find_element_by_class_name(
-        'public-DraftStyleDefault-block')
-    if os.name == 'nt':
-        elem.send_keys(Keys.CONTROL, Keys.ENTER)
-
-    if os.name == 'posix':
-        elem.send_keys(Keys.COMMAND, Keys.ENTER)
-
-
-def get_webdriver(options):
-    if os.name == 'nt':
-        return webdriver.Chrome(
-            options=options,
-            executable_path='./driver/chromedriver.exe')
-
-    if os.name == 'posix':
-        return webdriver.Chrome(
-            options=options,
-            executable_path='./driver/chromedriver')
-
-    return None
-
-
-def convert_to_kanji(txt):
-    if 'SAPPORO' in txt:
-        return '札幌'
-    if 'HAKODATE' in txt:
-        return '函館'
-    if 'FUKUSHIMA' in txt:
-        return '福島'
-    if 'NIIGATA' in txt:
-        return '新潟'
-    if 'TOKYO' in txt:
-        return '東京'
-    if 'NAKAYAMA' in txt:
-        return '中山'
-    if 'CHUKYO' in txt:
-        return '中京'
-    if 'KYOTO' in txt:
-        return '京都'
-    if 'HANSHIN' in txt:
-        return '阪神'
-    if 'KOKURA' in txt:
-        return '小倉'
+if __name__ == '__main__':
+    tweet(['./image/vote.jpg'])

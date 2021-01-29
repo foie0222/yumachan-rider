@@ -62,69 +62,69 @@ class Ticket:
 def make_ticket(entry, realtime_odds, limit_vote_amount):
     ticket_list = []
 
-    # 単勝購入
-    realtime_tan_odds_list = realtime_odds.tan_odds_list
-    tan_ticket_list = []
-    for horse in entry.horse_list:
+    # # 単勝購入
+    # realtime_tan_odds_list = realtime_odds.tan_odds_list
+    # tan_ticket_list = []
+    # for horse in entry.horse_list:
+    #
+    #     odds = list(filter(lambda real_odds: True if real_odds.umano ==
+    #                        horse.umano else False, realtime_tan_odds_list))[0]
+    #
+    #     bet = 100
+    #     expected_value = horse.probability * odds.tanodds
+    #     if expected_value >= 250 and odds.tanodds <= 100 and odds.tanodds >= 0:
+    #         bet = lowest_bet_for(limit_vote_amount / 5000 * expected_value, odds.tanodds)
+    #     else:
+    #         continue
+    #
+    #     ticket = Ticket(
+    #         entry.opdt,
+    #         entry.rcoursecd,
+    #         entry.rno,
+    #         'TANSYO',
+    #         'NORMAL',
+    #         '',
+    #         horse.umano,
+    #         str(bet),
+    #         expected_value,
+    #         odds.tanodds)
+    #     tan_ticket_list.append(ticket)
+    #
+    # sorted_tan_ticket_list = sorted(tan_ticket_list, key=lambda t: t.number)
+    # ticket_list.extend(sorted_tan_ticket_list)
 
-        odds = list(filter(lambda real_odds: True if real_odds.umano ==
-                           horse.umano else False, realtime_tan_odds_list))[0]
-
-        bet = 0
-        expected_value = horse.probability * odds.tanodds
-        if expected_value >= 250 and odds.tanodds <= 100 and odds.tanodds >= 0:
-            bet = lowest_bet_for(limit_vote_amount / 5000 * expected_value, odds.tanodds)
-        else:
-            continue
-
-        ticket = Ticket(
-            entry.opdt,
-            entry.rcoursecd,
-            entry.rno,
-            'TANSYO',
-            'NORMAL',
-            '',
-            horse.umano,
-            str(bet),
-            expected_value,
-            odds.tanodds)
-        tan_ticket_list.append(ticket)
-
-    sorted_tan_ticket_list = sorted(tan_ticket_list, key=lambda t: t.number)
-    ticket_list.extend(sorted_tan_ticket_list)
-
-    # 複勝購入
-    fuku_min_odds_list = realtime_odds.fuku_min_odds_list
-    fuku_ticket_list = []
-    for horse in entry.horse_list:
-
-        odds = list(filter(lambda real_odds: True if real_odds.umano ==
-                           horse.umano else False, fuku_min_odds_list))[0]
-
-        fuku_probability = get_fuku_probability(horse.probability, entry)
-
-        bet = 0
-        expected_value = fuku_probability * odds.fuku_min_odds
-        if expected_value >= 150 and odds.fuku_min_odds <= 10.0 and odds.fuku_min_odds >= 0:
-            bet = lowest_bet_for(limit_vote_amount / 5000 * expected_value, odds.fuku_min_odds)
-        else:
-            continue
-
-        ticket_fuku = Ticket(
-            entry.opdt,
-            entry.rcoursecd,
-            entry.rno,
-            'FUKUSYO',
-            'NORMAL',
-            '',
-            horse.umano,
-            str(bet),
-            expected_value,
-            odds.fuku_min_odds)
-        fuku_ticket_list.append(ticket_fuku)
-
-    sorted_fuku_ticket_list = sorted(fuku_ticket_list, key=lambda t: t.number)
-    ticket_list.extend(sorted_fuku_ticket_list)
+    # # 複勝購入
+    # fuku_min_odds_list = realtime_odds.fuku_min_odds_list
+    # fuku_ticket_list = []
+    # for horse in entry.horse_list:
+    #
+    #     odds = list(filter(lambda real_odds: True if real_odds.umano ==
+    #                        horse.umano else False, fuku_min_odds_list))[0]
+    #
+    #     fuku_probability = get_fuku_probability(horse.probability, entry)
+    #
+    #     bet = 100
+    #     expected_value = fuku_probability * odds.fuku_min_odds
+    #     # if expected_value >= 150 and odds.fuku_min_odds <= 10.0 and odds.fuku_min_odds >= 0:
+    #     #     bet = lowest_bet_for(limit_vote_amount / 5000 * expected_value, odds.fuku_min_odds)
+    #     # else:
+    #     #     continue
+    #
+    #     ticket_fuku = Ticket(
+    #         entry.opdt,
+    #         entry.rcoursecd,
+    #         entry.rno,
+    #         'FUKUSYO',
+    #         'NORMAL',
+    #         '',
+    #         horse.umano,
+    #         str(bet),
+    #         expected_value,
+    #         odds.fuku_min_odds)
+    #     fuku_ticket_list.append(ticket_fuku)
+    #
+    # sorted_fuku_ticket_list = sorted(fuku_ticket_list, key=lambda t: t.number)
+    # ticket_list.extend(sorted_fuku_ticket_list)
 
     # 馬連を購入
     just_before_umaren_odds_list = realtime_odds.umaren_odds_list
@@ -142,14 +142,14 @@ def make_ticket(entry, realtime_odds, limit_vote_amount):
             horse2_in_umaren_probability = get_ren_probability(
                 horse2.probability)
 
-            bet = 0
+            bet = 100
             expected_value = odds.umaren_odds * (
                 horse1.probability * (
                     horse2_in_umaren_probability - horse2.probability) + horse2.probability * (
                     horse1_in_umaren_probability - horse1.probability)) / 100
 
-            if expected_value >= 250 and odds.umaren_odds <= 100 and odds.umaren_odds >= 0:
-                bet = lowest_bet_for(limit_vote_amount / 5000 * expected_value, odds.umaren_odds)
+            if expected_value >= 250 and odds.umaren_odds <= 250 and odds.umaren_odds >= 0:
+                pass
             else:
                 continue
 
@@ -191,9 +191,9 @@ def make_ticket(entry, realtime_odds, limit_vote_amount):
             expected_value = odds.wideodds * horse1_in_wide_probability * \
                 horse2_in_wide_probability / 100
 
-            bet = 0
-            if expected_value >= 250 and odds.wideodds <= 150 and odds.wideodds >= 0:
-                bet = lowest_bet_for(limit_vote_amount / 5000 * expected_value, odds.wideodds)
+            bet = 100
+            if expected_value >= 300 and odds.wideodds <= 150 and odds.wideodds >= 0:
+                pass
             else:
                 continue
 
@@ -228,12 +228,12 @@ def make_ticket(entry, realtime_odds, limit_vote_amount):
                         lambda real_odds: True if pair_num == real_odds.pair_umano else False,
                         realtime_trio_odds_list))[0]
 
-                bet = 0
+                bet = 100
                 expected_value = get_trio_expected_possibility(
                     horse1.probability, horse2.probability, horse3.probability) * odds.trio_odds
 
-                if expected_value >= 150 and odds.trio_odds <= 300 and odds.trio_odds >= 0:
-                    bet = lowest_bet_for(limit_vote_amount / 5000 * expected_value / 100, odds.trio_odds)
+                if expected_value >= 150 and odds.trio_odds <= 500 and odds.trio_odds >= 0:
+                    pass
                 else:
                     continue
 
@@ -266,13 +266,13 @@ def make_verification_ticket(entry, just_before_odds, my_money):
     # realtime_tan_odds_list = just_before_odds.tan_odds_list
     # tan_ticket_list = []
     # for horse in entry.horse_list:
-
+    #
     #     odds = list(filter(lambda real_odds: True if real_odds.umano ==
     # horse.umano else False, realtime_tan_odds_list))[0]
-
+    #
     #     bet = 0
     #     expected_value = horse.probability * odds.tanodds
-
+    #
     #     ticket = Ticket(
     #         entry.opdt,
     #         entry.rcoursecd,
@@ -285,7 +285,7 @@ def make_verification_ticket(entry, just_before_odds, my_money):
     #         expected_value,
     #         odds.tanodds)
     #     tan_ticket_list.append(ticket)
-
+    #
     # sorted_tan_ticket_list = sorted(tan_ticket_list, key=lambda t: t.number)
     # ticket_list.extend(sorted_tan_ticket_list)
 

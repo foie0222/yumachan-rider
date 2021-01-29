@@ -1,14 +1,13 @@
 from gss import write_gss
 from odds import get_realtime_odds, get_just_before_odds
 from scraper import Scraper, get_date, get_url, isLocal
-from entry import get_entry
+from entry import get_entry, get_entry_by_png
 from ticket import make_ticket, make_verification_ticket
 from writer import make_csv, write_races_csv, write_result_to_csv
 from verification import get_verification_list
-from ipatgo import vote, get_limit_vote_amount
-from twitter import tweet_with_jpg
+from ipatgo import vote
+from twitter import tweet
 from images import create_jpg
-from slack import send_slack
 import sys
 import time
 import glob
@@ -23,19 +22,17 @@ def main():
     # ゆまちゃんのHRから情報を取得
     scraper = Scraper(URL)
     header_txt = scraper.get_header_txt()
-    body_txt = scraper.get_body_txt()
-
-    # 取得した結果を変換
-    entry = get_entry(header_txt, body_txt)
+    png_url = scraper.get_png_url()
+    entry = get_entry_by_png(header_txt, png_url)
 
     # リアルタイムオッズを取得
     realtime_odds = get_realtime_odds(entry.opdt, entry.rcoursecd, entry.rno)
 
-    # 購入限度額を取得
-    limit_vote_amount = get_limit_vote_amount()
-
     # 購入馬券リストを作る
-    ticket_list = make_ticket(entry, realtime_odds, 50000)
+    ticket_list = make_ticket(entry, realtime_odds, None)
+
+    for ticket in ticket_list:
+        print(ticket.to_string())
 
     # 購入馬券リストをcsvに書き出す
     make_csv(ticket_list, timestamp)
@@ -46,20 +43,15 @@ def main():
     # 買い目画像作成
     jpgs = create_jpg(entry, ticket_list)
 
-    # スラック通知
-    send_slack(jpgs)
-
     # tweet
-    # tweet_with_jpg(entry, len(jpgs))
+    tweet(jpgs)
 
     # 購入馬券リストをGSSに書き出す
     write_gss(ticket_list, timestamp, True)
 
 
 def verify():
-    my_money = int(50000);
-    print("my_money : " + str(my_money))
-    date_list = ['races/202009*.txt','races/202010*.txt','races/202011*.txt']
+    date_list = ['races/202011*.txt']
     for date in date_list:
         file_list = sorted(glob.glob(date), reverse=False)
         for target_file in file_list:
@@ -86,7 +78,7 @@ def verify():
 
                     # 購入馬券リストを作る
                     ticket_list = make_verification_ticket(
-                        entry, just_before_odds, my_money)
+                        entry, just_before_odds, None)
 
                     # 検証用のデータを作成
                     verification_list = get_verification_list(ticket_list)
@@ -98,13 +90,8 @@ def verify():
                         race_bet += int(verification.ticket.bet_price)
                         race_refund += int(verification.ticket.bet_price) * verification.refund / 100
 
-                    my_money = my_money + race_refund - race_bet
-                    print("")
-                    print("my_money : " + str(my_money))
-                    print("")
-
                     # csv書き出し
-                    # write_result_to_csv(entry.opdt, verification_list)
+                    write_result_to_csv(entry.opdt, verification_list)
 
                     all_verification_list.extend(verification_list)
 
