@@ -45,7 +45,10 @@ def get_result_capture():
     driver.execute_script("document.body.style.zoom='90%'")
     time.sleep(2)
 
-    # スクショを取得
+    # スクリーンショットを取る
+    w = driver.execute_script('return document.body.scrollWidth')
+    h = driver.execute_script('return document.body.scrollHeight')
+    driver.set_window_size(w, h)
     driver.save_screenshot('./image/result.png')
 
     driver.quit()
