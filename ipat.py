@@ -18,12 +18,11 @@ def get_result_capture():
     # オプション追加
     options = webdriver.ChromeOptions()
     options.add_argument("--no-sandbox")
-    options.add_argument('--headless')
+    options.add_argument('--start-maximized')
     driver = get_webdriver(options)
 
     # ログインページを開く
     driver.get('https://www.ipat.jra.go.jp/')
-    driver.maximize_window()
 
     # ログイン情報を入力
     driver.find_element_by_name('inetid').send_keys(INET_ID)

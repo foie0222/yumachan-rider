@@ -163,5 +163,5 @@ def convert_to_kanji(txt):
 
 def trim_result_capture():
     im = Image.open('image/result.png')
-    im_crop = im.crop((260, 210, 750, 475))
+    im_crop = im.crop((672, 340, 970, 635))
     im_crop.save('image/tweet_result.png', quality=95)
