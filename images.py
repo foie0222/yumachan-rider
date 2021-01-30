@@ -159,3 +159,9 @@ def convert_to_kanji(txt):
         return '阪神'
     if 'KOKURA' in txt:
         return '小倉'
+
+
+def trim_result_capture():
+    im = Image.open('image/result.png')
+    im_crop = im.crop((260, 210, 750, 475))
+    im_crop.save('image/tweet_result.png', quality=95)

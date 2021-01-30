@@ -1,4 +1,5 @@
 from gss import write_gss
+from ipat import get_result_capture
 from odds import get_realtime_odds, get_just_before_odds
 from scraper import Scraper, get_date, get_url, isLocal
 from entry import get_entry, get_entry_by_png
@@ -7,7 +8,7 @@ from writer import make_csv, write_races_csv, write_result_to_csv
 from verification import get_verification_list
 from ipatgo import vote
 from twitter import tweet
-from images import create_jpg
+from images import create_jpg, trim_result_capture
 import sys
 import time
 import glob
@@ -175,10 +176,18 @@ def url_scrape(loop):
         count += 1
 
 
+def tweet_result():
+    get_result_capture()
+    trim_result_capture()
+    tweet(['./image/tweet_result.png'])
+
+
 if __name__ == '__main__':
     if sys.argv[1] == 'verification':
         verify()
     elif sys.argv[1] == 'scraping':
         url_scrape(int(sys.argv[2]))  # ループを回したい回数
+    elif sys.argv[1] == 'result':
+        tweet_result()
     else:
         main()
