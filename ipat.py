@@ -40,15 +40,19 @@ def get_result_capture():
     driver.find_element_by_class_name('btn-reference').click()
     time.sleep(2)
 
-    # 倍率を変更
-    driver.execute_script("document.body.style.zoom='90%'")
-    time.sleep(2)
+    # # 倍率を変更
+    # driver.execute_script("document.body.style.zoom='90%'")
+    # time.sleep(2)
+    #
+    # # スクリーンショットを取る
+    # w = driver.execute_script('return document.body.scrollWidth')
+    # h = driver.execute_script('return document.body.scrollHeight')
+    # driver.set_window_size(w, h)
+    # driver.save_screenshot('./image/result.png')
 
-    # スクリーンショットを取る
-    w = driver.execute_script('return document.body.scrollWidth')
-    h = driver.execute_script('return document.body.scrollHeight')
-    driver.set_window_size(w, h)
-    driver.save_screenshot('./image/result.png')
+    png = driver.find_element_by_class_name('balance-col').screenshot_as_png
+    with open('./image/result.png', 'wb') as f:
+        f.write(png)
 
     driver.quit()
 
